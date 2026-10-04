@@ -166,13 +166,31 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject json = new JSONObject(sb.toString());
                     String tagName = json.optString("tag_name", ""); // e.g. "v1.0.1"
                     String releaseBody = json.optString("body", "");
-                    String htmlUrl = json.optString("html_url", "https://github.com/whsunshine8/xiaoyoubang-app/releases/latest");
+                    
+                    // 智能提取 release 中的 .apk 直链
+                    String directApkUrl = null;
+                    if (json.has("assets")) {
+                        org.json.JSONArray assets = json.getJSONArray("assets");
+                        for (int i = 0; i < assets.length(); i++) {
+                            JSONObject asset = assets.getJSONObject(i);
+                            String aName = asset.optString("name", "");
+                            if (aName.endsWith(".apk")) {
+                                directApkUrl = asset.optString("browser_download_url", "");
+                                break;
+                            }
+                        }
+                    }
+                    if (directApkUrl == null || directApkUrl.isEmpty()) {
+                        directApkUrl = "https://github.com/whsunshine8/xiaoyoubang-app/releases/download/" + tagName + "/CampusHelper_" + tagName + ".apk";
+                    }
 
                     PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                    String currentVersion = "v" + pInfo.versionName;
+                    String currentVersion = "v" + pInfo.versionName; // e.g. "v1.0.1"
 
-                    if (!tagName.isEmpty() && !tagName.equalsIgnoreCase(currentVersion)) {
-                        new Handler(Looper.getMainLooper()).post(() -> showUpdateDialog(tagName, releaseBody, htmlUrl));
+                    // 精准版本对比: tagName > currentVersion
+                    if (isNewerVersion(tagName, currentVersion)) {
+                        final String downloadUrl = directApkUrl;
+                        new Handler(Looper.getMainLooper()).post(() -> showUpdateDialog(tagName, currentVersion, releaseBody, downloadUrl));
                     }
                 }
             } catch (Exception e) {
@@ -181,14 +199,32 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void showUpdateDialog(String newVersion, String changelog, String downloadUrl) {
+    private boolean isNewerVersion(String remoteTag, String localTag) {
+        if (remoteTag == null || remoteTag.isEmpty()) return false;
+        String r = remoteTag.replace("v", "").replace("V", "").trim();
+        String l = localTag.replace("v", "").replace("V", "").trim();
+        String[] rParts = r.split("\\.");
+        String[] lParts = l.split("\\.");
+        int len = Math.max(rParts.length, lParts.length);
+        for (int i = 0; i < len; i++) {
+            int rNum = i < rParts.length ? Integer.parseInt(rParts[i]) : 0;
+            int lNum = i < lParts.length ? Integer.parseInt(lParts[i]) : 0;
+            if (rNum > lNum) return true;
+            if (rNum < lNum) return false;
+        }
+        return false;
+    }
+
+    private void showUpdateDialog(String newVersion, String currentVersion, String changelog, String directDownloadUrl) {
         if (isFinishing() || isDestroyed()) return;
 
         new AlertDialog.Builder(this)
                 .setTitle("🎉 发现新版本 " + newVersion)
-                .setMessage("当前版本: v1.0.1" + "\n\n更新内容:\n" + changelog)
-                .setPositiveButton("立即更新", (dialog, which) -> {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                .setMessage("当前版本: " + currentVersion + "\n\n📋 更新说明:\n" + (changelog.isEmpty() ? "修复已知问题，优化用户体验。" : changelog))
+                .setPositiveButton("🚀 立即下载安装", (dialog, which) -> {
+                    Toast.makeText(MainActivity.this, "正在开始下载 " + newVersion + " 安装包...", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(directDownloadUrl));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                 })
                 .setNegativeButton("稍后再说", null)

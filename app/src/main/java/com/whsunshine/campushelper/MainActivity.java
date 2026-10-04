@@ -110,6 +110,13 @@ public class MainActivity extends AppCompatActivity {
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
+            public void onPermissionRequest(final android.webkit.PermissionRequest request) {
+                MainActivity.this.runOnUiThread(() -> {
+                    request.grant(request.getResources());
+                });
+            }
+
+            @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (uploadMessageAboveL != null) {
                     uploadMessageAboveL.onReceiveValue(null);
@@ -123,6 +130,13 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+                // 动态申请相机权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.CAMERA}, 1001);
+            }
+        }
 
         webView.loadUrl(APP_URL);
 

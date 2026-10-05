@@ -112,7 +112,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPermissionRequest(final android.webkit.PermissionRequest request) {
                 MainActivity.this.runOnUiThread(() -> {
-                    request.grant(request.getResources());
+                    try {
+                        request.grant(request.getResources());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 });
             }
 

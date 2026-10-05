@@ -1,14 +1,24 @@
 package com.whsunshine.campushelper;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.graphics.Color;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.view.KeyEvent;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -21,6 +31,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONObject;
@@ -37,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri[]> uploadMessageAboveL;
     private static final String APP_URL = "https://www.cnkiedu.cn/m";
     private static final String GITHUB_LATEST_API = "https://api.github.com/repos/whsunshine8/xiaoyoubang-app/releases/latest";
+    private static final String CHANNEL_ID = "campushelper_im_channel";
+    private static final String CHANNEL_NAME = "校友帮即时沟通消息";
 
     private final ActivityResultLauncher<Intent> fileChooserLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -65,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        createNotificationChannel();
+
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         webView = findViewById(R.id.webView);
 
@@ -79,7 +94,10 @@ public class MainActivity extends AppCompatActivity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " CampusHelper-Android/1.0.3");
+        settings.setUserAgentString(settings.getUserAgentString() + " CampusHelper-Android/1.1.0");
+
+        // 注册 JavaScript 原生桥接接口，供网页调用系统通知与硬件震动
+        webView.addJavascriptInterface(new NativeBridge(), "CampusHelperNative");
 
         swipeRefreshLayout.setColorSchemeResources(R.color.primary);
         swipeRefreshLayout.setOnRefreshListener(() -> webView.reload());
@@ -135,17 +153,140 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-                // 动态申请相机权限
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{android.Manifest.permission.CAMERA}, 1001);
-            }
-        }
+        // 动态申请相机与通知权限
+        requestPermissionsSafely();
 
         webView.loadUrl(APP_URL);
 
         // 启动时自动检查 GitHub 最新版本
         checkAppUpdateAsync();
+    }
+
+    private void requestPermissionsSafely() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            java.util.List<String> permissions = new java.util.ArrayList<>();
+            if (checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                permissions.add(android.Manifest.permission.CAMERA);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    permissions.add(android.Manifest.permission.POST_NOTIFICATIONS);
+                }
+            }
+            if (!permissions.isEmpty()) {
+                requestPermissions(permissions.toArray(new String[0]), 1002);
+            }
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build();
+
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("用于跑腿代办订单即时图文沟通消息提醒");
+            channel.enableLights(true);
+            channel.setLightColor(Color.BLUE);
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{0, 250, 150, 250});
+            channel.setSound(soundUri, audioAttributes);
+            channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    /**
+     * JavaScript 桥接类：前端调用 CampusHelperNative.postNotification(...)
+     */
+    public class NativeBridge {
+        @JavascriptInterface
+        public void postNotification(String title, String content, String taskIdStr) {
+            MainActivity.this.runOnUiThread(() -> showSystemNotification(title, content, taskIdStr));
+        }
+
+        @JavascriptInterface
+        public boolean isNative() {
+            return true;
+        }
+
+        @JavascriptInterface
+        public void requestBatteryOptimizationExemption() {
+            MainActivity.this.runOnUiThread(MainActivity.this::requestIgnoreBatteryOptimizations);
+        }
+    }
+
+    private void requestIgnoreBatteryOptimizations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                if (pm != null && !pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                    Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    intent.setData(Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void showSystemNotification(String title, String content, String taskIdStr) {
+        try {
+            // 唤醒屏幕（锁屏亮屏）
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                @SuppressLint("InvalidWakeLockTag")
+                PowerManager.WakeLock wakeLock = pm.newWakeLock(
+                        PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                        "CampusHelper:NotificationWakeLock"
+                );
+                wakeLock.acquire(3000);
+            }
+
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.putExtra("target_task_id", taskIdStr);
+
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                    this,
+                    (int) System.currentTimeMillis(),
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0)
+            );
+
+            Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle(title != null ? title : "校友帮新消息")
+                    .setContentText(content != null ? content : "您收到了新的代办订单沟通消息")
+                    .setAutoCancel(true)
+                    .setSound(defaultSoundUri)
+                    .setVibrate(new long[]{0, 250, 150, 250})
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setContentIntent(pendingIntent);
+
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                int notifyId = (int) (System.currentTimeMillis() % 100000);
+                notificationManager.notify(notifyId, builder.build());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void checkAppUpdateAsync() {
@@ -168,10 +309,9 @@ public class MainActivity extends AppCompatActivity {
                     reader.close();
 
                     JSONObject json = new JSONObject(sb.toString());
-                    String tagName = json.optString("tag_name", ""); // e.g. "v1.0.1"
+                    String tagName = json.optString("tag_name", "");
                     String releaseBody = json.optString("body", "");
                     
-                    // 智能提取 release 中的 .apk 直链
                     String directApkUrl = null;
                     if (json.has("assets")) {
                         org.json.JSONArray assets = json.getJSONArray("assets");
@@ -189,16 +329,15 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                    String currentVersion = "v" + pInfo.versionName; // e.g. "v1.0.1"
+                    String currentVersion = "v" + pInfo.versionName;
 
-                    // 精准版本对比: tagName > currentVersion
                     if (isNewerVersion(tagName, currentVersion)) {
                         final String downloadUrl = directApkUrl;
                         new Handler(Looper.getMainLooper()).post(() -> showUpdateDialog(tagName, currentVersion, releaseBody, downloadUrl));
                     }
                 }
             } catch (Exception e) {
-                // 静默忽略网络错误
+                e.printStackTrace();
             }
         }).start();
     }

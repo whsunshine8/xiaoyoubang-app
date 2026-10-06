@@ -99,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
         // 注册 JavaScript 原生桥接接口，供网页调用系统通知与硬件震动
         webView.addJavascriptInterface(new NativeBridge(), "CampusHelperNative");
 
+        // 仅在 WebView 处于页面最顶部 (scrollY == 0) 时，才允许触发下拉刷新；否则将滑动手势交给 WebView 自身正常滚动
+        swipeRefreshLayout.setOnChildScrollUpCallback((parent, child) -> webView.getScrollY() > 0);
         swipeRefreshLayout.setColorSchemeResources(R.color.primary);
         swipeRefreshLayout.setOnRefreshListener(() -> webView.reload());
 
@@ -224,6 +226,15 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void requestBatteryOptimizationExemption() {
             MainActivity.this.runOnUiThread(MainActivity.this::requestIgnoreBatteryOptimizations);
+        }
+
+        @JavascriptInterface
+        public void setSwipeRefreshEnabled(boolean enabled) {
+            MainActivity.this.runOnUiThread(() -> {
+                if (swipeRefreshLayout != null) {
+                    swipeRefreshLayout.setEnabled(enabled);
+                }
+            });
         }
     }
 

@@ -178,11 +178,11 @@ public class CampusHelperPushService extends Service {
                 JSONObject res = new JSONObject(sb.toString());
                 if (res.optBoolean("success")) {
                     int total = res.optInt("total", 0);
-                    if (total > lastTotalUnread && total > 0) {
-                        // 有新增未读消息，弹出即时通知栏
+                    if (total > 0 && total != lastTotalUnread) {
+                        // 只要有未读消息且数量发生变化，立即弹出即时通知栏
                         JSONArray unreadArr = res.optJSONArray("unread");
                         int targetTaskId = 0;
-                        String detailText = "您有 " + total + " 条新的订单沟通消息未查看，点击立即回复";
+                        String detailText = "您有 " + total + " 条新的代办订单沟通消息，点击立即查看";
                         if (unreadArr != null && unreadArr.length() > 0) {
                             JSONObject firstUnread = unreadArr.getJSONObject(0);
                             targetTaskId = firstUnread.optInt("task_id");

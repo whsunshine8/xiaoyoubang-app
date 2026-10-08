@@ -214,6 +214,19 @@ public class MainActivity extends AppCompatActivity {
      */
     public class NativeBridge {
         @JavascriptInterface
+        public void syncAuthToken(String token) {
+            if (token != null && !token.isEmpty()) {
+                Intent serviceIntent = new Intent(MainActivity.this, CampusHelperPushService.class);
+                serviceIntent.putExtra("token", token);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent);
+                } else {
+                    startService(serviceIntent);
+                }
+            }
+        }
+
+        @JavascriptInterface
         public void postNotification(String title, String content, String taskIdStr) {
             MainActivity.this.runOnUiThread(() -> showSystemNotification(title, content, taskIdStr));
         }

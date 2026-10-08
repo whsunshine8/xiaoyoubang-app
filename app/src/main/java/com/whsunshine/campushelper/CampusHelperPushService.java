@@ -45,30 +45,46 @@ public class CampusHelperPushService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        createNotificationChannels();
-        startForeground(FG_NOTIFICATION_ID, buildForegroundNotification("校友帮消息守护中", "正在后台实时接收新订单、代办留言与系统通知"));
-
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (pm != null) {
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CampusHelper:PushServiceWakeLock");
-            wakeLock.acquire(10 * 60 * 1000L /* 10 mins */);
+        try {
+            createNotificationChannels();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(FG_NOTIFICATION_ID, buildForegroundNotification("校友帮消息守护中", "正在后台实时接收新订单、代办留言与系统通知"), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+            } else {
+                startForeground(FG_NOTIFICATION_ID, buildForegroundNotification("校友帮消息守护中", "正在后台实时接收新订单、代办留言与系统通知"));
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
 
-        SharedPreferences sp = getSharedPreferences("xyb_prefs", MODE_PRIVATE);
-        lastBroadcastId = sp.getInt("last_broadcast_id", 0);
-        lastTotalUnread = sp.getInt("last_total_unread", 0);
-
-        handler = new Handler(Looper.getMainLooper());
-        pollRunnable = new Runnable() {
-            @Override
-            public void run() {
-                checkBackendMessages();
-                if (handler != null) {
-                    handler.postDelayed(this, POLL_INTERVAL_MS);
-                }
+        try {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CampusHelper:PushServiceWakeLock");
+                wakeLock.acquire(10 * 60 * 1000L /* 10 mins */);
             }
-        };
-        handler.postDelayed(pollRunnable, 2000);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        try {
+            SharedPreferences sp = getSharedPreferences("xyb_prefs", MODE_PRIVATE);
+            lastBroadcastId = sp.getInt("last_broadcast_id", 0);
+            lastTotalUnread = sp.getInt("last_total_unread", 0);
+
+            handler = new Handler(Looper.getMainLooper());
+            pollRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    checkBackendMessages();
+                    if (handler != null) {
+                        handler.postDelayed(this, POLL_INTERVAL_MS);
+                    }
+                }
+            };
+            handler.postDelayed(pollRunnable, 2000);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

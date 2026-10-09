@@ -10,8 +10,8 @@ android {
         applicationId "com.whsunshine.campushelper"
         minSdk 24
         targetSdk 34
-        versionCode 192
-        versionName "1.6.2"
+        versionCode 193
+        versionName "1.6.3"
     }
 
     buildTypes {

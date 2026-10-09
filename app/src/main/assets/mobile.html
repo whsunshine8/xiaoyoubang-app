@@ -484,7 +484,7 @@
 
     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
       高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
-      Version v1.6.2 (Build 192)
+      Version v1.6.3 (Build 193)
     </div>
   </div>
 
@@ -662,7 +662,7 @@
             <span class="arrow">详情 &gt;</span>
           </div>
           <div class="menu-item" onclick="checkAppUpdate(true)">
-            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.6.2</span></span>
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.6.3</span></span>
             <span class="arrow">检测 &gt;</span>
           </div>
         </div>
@@ -1293,8 +1293,8 @@
 
   <!-- 核心交互脚本 -->
   <script>
-    var CURRENT_VERSION = '1.6.2';
-    var CURRENT_BUILD = 192;
+    var CURRENT_VERSION = '1.6.3';
+    var CURRENT_BUILD = 193;
     var currentUser = null;
     var currentRole = 'student';
     var availableSchools = [];
@@ -2206,7 +2206,20 @@
       try {
         var endpoint = '/api/tasks/my';
         if (currentRole === 'agent') {
-          endpoint = '/api/tasks?type=agent_market';
+          // 代办员视角：同时拉取抢单大厅(market)和我承接的任务(agent_jobs)
+          var resMarket = await safeFetchJson('/api/tasks?type=agent_market');
+          var resJobs = await safeFetchJson('/api/tasks?type=agent_jobs');
+          var mList = (resMarket && (resMarket.tasks || resMarket.data)) ? (resMarket.tasks || resMarket.data) : [];
+          var jList = (resJobs && (resJobs.tasks || resJobs.data)) ? (resJobs.tasks || resJobs.data) : [];
+          
+          // 合并并按 id 倒序去重
+          var combinedMap = {};
+          mList.concat(jList).forEach(function(item) {
+            combinedMap[item.id] = item;
+          });
+          taskListCache = Object.values(combinedMap).sort(function(a, b) { return b.id - a.id; });
+          renderTaskList();
+          return;
         } else if (currentRole === 'admin') {
           endpoint = '/api/admin/tasks?status=all';
         }

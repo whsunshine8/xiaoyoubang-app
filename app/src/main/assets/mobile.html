@@ -484,7 +484,7 @@
 
     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
       高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
-      Version v1.5.4 (Build 180)
+      Version v1.5.5 (Build 185)
     </div>
   </div>
 
@@ -662,7 +662,7 @@
             <span class="arrow">详情 &gt;</span>
           </div>
           <div class="menu-item" onclick="checkAppUpdate(true)">
-            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.5.4</span></span>
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.5.5</span></span>
             <span class="arrow">检测 &gt;</span>
           </div>
         </div>
@@ -1293,8 +1293,8 @@
 
   <!-- 核心交互脚本 -->
   <script>
-    var CURRENT_VERSION = '1.5.4';
-    var CURRENT_BUILD = 180;
+    var CURRENT_VERSION = '1.5.5';
+    var CURRENT_BUILD = 185;
     var currentUser = null;
     var currentRole = 'student';
     var availableSchools = [];
@@ -3669,11 +3669,19 @@ function openSignDocModal() {
 
       try {
         var res = await safeFetchJson('/api/user/my-roles');
-        if (res && res.available_roles && res.available_roles.length > 0) {
-          renderRoles(res.available_roles);
-        } else {
-          renderRoles([{ key: 'student', name: '🎓 学生 / 委托人', desc: '发布代办订单与维护教育经历' }]);
-        }
+        var rKeys = (res && (res.roles || res.available_roles)) ? (res.roles || res.available_roles) : ['student'];
+        var meta = {
+          student: { key: 'student', name: '🎓 学生 / 委托人', desc: '发布代办订单、维护学籍档案与教育经历' },
+          agent: { key: 'agent', name: '🏃 校园官方代办员', desc: '接单代办、现场核验证明材料、调整费用与交付' },
+          admin: { key: 'admin', name: '🛡️ 平台总管理员', desc: '全站订单调度、高校与支付通道审批管理' }
+        };
+        var list = [];
+        rKeys.forEach(function(k) {
+          if (typeof k === 'string' && meta[k]) list.push(meta[k]);
+          else if (typeof k === 'object' && k.key) list.push(k);
+        });
+        if (list.length === 0) list.push(meta.student);
+        renderRoles(list);
       } catch (err) {
         renderRoles([{ key: 'student', name: '🎓 学生 / 委托人', desc: '发布代办订单与维护教育经历' }]);
       }

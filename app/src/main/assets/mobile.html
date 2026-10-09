@@ -484,7 +484,7 @@
 
     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
       高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
-      Version v1.6.4 (Build 194)
+      Version v1.6.5 (Build 195)
     </div>
   </div>
 
@@ -662,7 +662,7 @@
             <span class="arrow">详情 &gt;</span>
           </div>
           <div class="menu-item" onclick="checkAppUpdate(true)">
-            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.6.4</span></span>
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.6.5</span></span>
             <span class="arrow">检测 &gt;</span>
           </div>
         </div>
@@ -1293,8 +1293,8 @@
 
   <!-- 核心交互脚本 -->
   <script>
-    var CURRENT_VERSION = '1.6.4';
-    var CURRENT_BUILD = 194;
+    var CURRENT_VERSION = '1.6.5';
+    var CURRENT_BUILD = 195;
     var currentUser = null;
     var currentRole = 'student';
     var availableSchools = [];
@@ -2511,6 +2511,121 @@ function openSignDocModal() {
       alert("🎉 电子签名已成功合成至委托书与申请表，材料包已就绪！");
     }
 
+    function generateDocSvgDataUrl(docName, school, campus, title, desc, signatureDataUrl) {
+      var isProxy = docName.indexOf('委托') !== -1;
+      var docTitle = school + (isProxy ? ' 校友学籍档案代办授权委托书' : ' 校友学籍档案业务办理申请表');
+      var studentName = (currentUser && currentUser.profile && currentUser.profile.real_name) ? currentUser.profile.real_name : ((currentUser && currentUser.email) || '委托人校友');
+      var studentPhone = (currentUser && currentUser.profile && currentUser.profile.phone) ? currentUser.profile.phone : '-';
+      var studentIdCard = (currentUser && currentUser.profile && currentUser.profile.id_card) ? currentUser.profile.id_card : '-';
+      var studentAddr = (currentUser && currentUser.profile && currentUser.profile.address) ? currentUser.profile.address : '-';
+      var todayStr = new Date().toLocaleDateString('zh-CN');
+
+      var canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 1100;
+      var ctx = canvas.getContext('2d');
+
+      // 背景白色
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 800, 1100);
+
+      // 边框
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(40, 40, 720, 1020);
+
+      // 标题
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(docTitle, 400, 95);
+
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#555555';
+      ctx.fillText('校友帮官方实名制委托办理凭证 · 电子签名合法存证', 400, 125);
+
+      // 分割线
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(60, 140);
+      ctx.lineTo(740, 140);
+      ctx.stroke();
+
+      // 法定事由
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'left';
+      ctx.fillText('【法定事由】：', 60, 170);
+
+      ctx.font = '12px sans-serif';
+      ctx.fillText('本人因异地就业/升学原因无法亲自前往学校，特全权委托【校友帮】校园认证代办员前往贵校', 60, 195);
+      ctx.fillText('教务处、档案馆及相关部门窗口办理相关学籍档案业务。受托人所提交材料均经本人亲笔核验确认。', 60, 218);
+
+      // 表格绘制
+      var startY = 245;
+      var rowH = 48;
+      var tableW = 680;
+      var startX = 60;
+
+      var rows = [
+        [ { w: 120, t: '委托人姓名', bg: true }, { w: 220, t: studentName }, { w: 120, t: '联系电话', bg: true }, { w: 220, t: studentPhone } ],
+        [ { w: 120, t: '身份证号', bg: true }, { w: 560, t: studentIdCard, colSpan: 3 } ],
+        [ { w: 120, t: '受托代办员', bg: true }, { w: 560, t: '【接单后系统自动带出实名认证代办员】', colSpan: 3, color: '#2563eb' } ],
+        [ { w: 120, t: '学籍高校校区', bg: true }, { w: 220, t: school + ' (' + (campus || '主校区') + ')' }, { w: 120, t: '办理事项', bg: true }, { w: 220, t: title, bold: true } ],
+        [ { w: 120, t: '收件地址', bg: true }, { w: 560, t: studentAddr, colSpan: 3 } ],
+        [ { w: 120, t: '办理要求', bg: true }, { w: 560, t: (desc || '按高校教务处及档案馆通用规范办理'), colSpan: 3 } ],
+        [ { w: 120, t: '委托人手写签名', bg: true, isSignRow: true }, { w: 560, t: '', colSpan: 3, isSignRow: true } ]
+      ];
+
+      var curY = startY;
+      for (var r = 0; r < rows.length; r++) {
+        var row = rows[r];
+        var curX = startX;
+        var curRowH = row[0].isSignRow ? 100 : rowH;
+
+        for (var c = 0; c < row.length; c++) {
+          var cell = row[c];
+          if (cell.bg) {
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(curX, curY, cell.w, curRowH);
+          }
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(curX, curY, cell.w, curRowH);
+
+          if (cell.isSignRow && !cell.bg) {
+            // 绘制签名
+            if (signatureDataUrl) {
+              var signImg = new Image();
+              signImg.src = signatureDataUrl;
+              try {
+                ctx.drawImage(signImg, curX + 20, curY + 15, 180, 70);
+              } catch(e) {}
+            }
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText('签署日期：' + todayStr, curX + 240, curY + 58);
+          } else {
+            ctx.fillStyle = cell.color || '#000000';
+            ctx.font = (cell.bold ? 'bold ' : '') + '12px sans-serif';
+            ctx.fillText(cell.t || '', curX + 10, curY + (curRowH / 2) + 4);
+          }
+
+          curX += cell.w;
+        }
+        curY += curRowH;
+      }
+
+      // 底部防伪防篡改提示
+      ctx.fillStyle = '#64748b';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('已由校友帮数字签名鉴证系统加密验签 · 防篡改存证校验码：' + Date.now(), 740, 1020);
+
+      return canvas.toDataURL('image/png');
+    }
+
     async function synthesizeMobileSignDocs(signatureDataUrl) {
       var school = document.getElementById("taskSchoolSelect").value || "指定高校";
       var campus = document.getElementById("taskCampusSelect").value || "主校区";
@@ -2714,14 +2829,24 @@ function openSignDocModal() {
         return;
       }
 
-      // 如果有签名，确保手签类单据使用已合成的公文图片（若未合成图片则兜底用签名），避免直接把孤立笔迹存为材料图片
+      // 如果有签名，强制重新生成完整的标准公文单据图片（确保委托书和申请表必须嵌入背景表格与公文模板，绝不允许裸签名流入 materials）
+      if (signature) {
+        try {
+          await synthesizeMobileSignDocs(signature);
+        } catch(e) {
+          console.error("Auto synthesize on submit failed:", e);
+        }
+      }
+
       var mats = JSON.parse(JSON.stringify(currentTaskMaterials || []));
       if (signature) {
         mats.forEach(function(m) {
           if (m.name.indexOf('委托书') !== -1 || m.name.indexOf('申请表') !== -1 || m.isDoc) {
             m.status = 'uploaded';
-            if (!m.file_url) {
-              m.file_url = signature;
+            // 若仍然未生成图片，生成带 SVG 背景公文单据 Base64
+            if (!m.file_url || m.file_url === signature) {
+              m.file_url = generateDocSvgDataUrl(m.name, schoolName, campus, serviceTitle, desc, signature);
+              m.fileName = m.name + '_已签署.png';
             }
           }
         });

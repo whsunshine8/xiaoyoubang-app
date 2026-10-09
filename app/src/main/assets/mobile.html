@@ -1,0 +1,4032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="校友帮">
+  <link rel="apple-touch-icon" href="https://www.cnkiedu.cn/logo.png">
+  <link rel="manifest" href="/manifest.json">
+  <title>校友帮 - 高校学籍档案代办小程序</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --accent: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-sub: #64748b;
+      --border: #e2e8f0;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      user-select: none;
+    }
+    input, textarea, select { user-select: auto; font-family: inherit; }
+    
+    /* ---------------- 未登录独立启动首屏样式 ---------------- */
+    #guestAuthContainer {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 40%);
+      padding: 30px 20px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .auth-hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .auth-hero-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(37,99,235,0.2);
+      margin-bottom: 12px;
+    }
+    .auth-hero-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1e3a8a;
+      letter-spacing: 0.5px;
+    }
+    .auth-hero-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+    .auth-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 18px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+    }
+
+    /* ---------------- 登录后小程序主工作台样式 ---------------- */
+    #appMainContainer {
+      display: none;
+      padding-bottom: calc(75px + var(--safe-bottom));
+    }
+    .top-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .top-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--primary);
+    }
+    .top-logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid #bfdbfe;
+    }
+    .app-body {
+      padding: 12px 14px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 8px 14px;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:active { background: var(--primary-dark); }
+    .btn-outline {
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid var(--border);
+    }
+    .btn-outline:active { background: #f1f5f9; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+    .btn-block { width: 100%; padding: 10px; font-size: 14px; }
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); }
+    .btn-warning { background: var(--accent); color: #fff; }
+    
+    .form-group { margin-bottom: 12px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    .form-label span.req { color: var(--danger); }
+    .form-control {
+      width: 100%;
+      height: 38px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+    .form-control:focus { border-color: var(--primary); }
+    textarea.form-control { height: 75px; resize: vertical; }
+    .form-row { display: flex; gap: 8px; }
+    .form-row .form-group { flex: 1; }
+    
+    .sub-tabs {
+      display: flex;
+      gap: 6px;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+    }
+    .sub-tab-btn {
+      flex: 1;
+      padding: 6px 10px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-align: center;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .sub-tab-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    
+    .order-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #ffffff;
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--border);
+    }
+    .order-title { font-weight: 700; font-size: 14px; color: #0f172a; }
+    .order-meta { font-size: 12px; color: #475569; line-height: 1.6; margin: 6px 0; }
+    .order-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-pending { background: #fef3c7; color: #b45309; }
+    .badge-accepted { background: #dbeafe; color: #1e40af; }
+    .badge-completed { background: #dcfce7; color: #15803d; }
+    .badge-cancelled { background: #f1f5f9; color: #64748b; }
+    
+    .bottom-tabbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      padding-bottom: var(--safe-bottom);
+      height: calc(56px + var(--safe-bottom));
+      box-shadow: 0 -1px 4px rgba(0,0,0,0.03);
+    }
+    .tabbar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--text-sub);
+      cursor: pointer;
+    }
+    .tabbar-item .icon { font-size: 18px; margin-bottom: 2px; }
+    .tabbar-item.active { color: var(--primary); font-weight: 700; }
+    
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-sheet {
+      background: #ffffff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      position: relative;
+    }
+    .modal-sheet .card-title {
+      flex-shrink: 0;
+      margin-bottom: 12px;
+      padding-right: 28px;
+    }
+    .modal-sheet-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding-right: 2px;
+    }
+    .modal-sheet-footer {
+      flex-shrink: 0;
+      margin-top: 12px;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 20px;
+      color: #94a3b8;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      z-index: 10;
+    }
+    
+    .sign-canvas-box {
+      border: 2px dashed #3b82f6;
+      border-radius: 8px;
+      background: #ffffff;
+      touch-action: none !important;
+      overscroll-behavior: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      position: relative;
+      overflow: hidden;
+    }
+    .sign-canvas-box canvas {
+      display: block;
+      width: 100%;
+      height: 160px;
+      border-radius: 8px;
+      touch-action: none !important;
+      overscroll-behavior: none !important;
+      cursor: crosshair;
+    }
+    
+    .material-row-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .material-row-preview {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid #cbd5e1;
+    }
+    
+    .menu-list {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .menu-item {
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+      color: #1e293b;
+      cursor: pointer;
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:active { background: #f8fafc; }
+    .menu-item .arrow { color: #94a3b8; font-size: 12px; }
+      /* 实时消息通知横幅与未读红点样式 */
+    .tabbar-icon-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .unread-dot {
+      position: absolute;
+      top: -2px;
+      right: -8px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 9999px;
+      line-height: 1.2;
+      box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+      border: 1.5px solid #ffffff;
+    }
+    .global-msg-banner {
+      position: fixed;
+      top: 12px;
+      left: 14px;
+      right: 14px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 14px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      animation: slideDownIn 0.3s ease-out;
+      border: 1px solid #334155;
+    }
+    @keyframes slideDownIn {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+  </style>
+  <script src="/jsqr.js"></script>
+  <script src="/html2canvas.js"></script>
+  <script src="/jspdf.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+  <div id="globalMsgBanner" class="global-msg-banner" style="display: none;" onclick="handleBannerClick()"><div style="font-size:20px;">💬</div><div style="flex:1; overflow:hidden;"><div id="globalBannerTitle" style="font-weight:700; font-size:12px; color:#38bdf8;">新消息通知</div><div id="globalBannerText" style="font-size:12px; color:#f8fafc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">内容</div></div><div style="font-size:12px; color:#94a3b8;">查看 &gt;</div></div>
+
+
+  <!-- ============================================================= -->
+  <!-- 容器 1: 未登录全屏启动登录/注册首屏 -->
+  <!-- ============================================================= -->
+  <div id="guestAuthContainer">
+    <div class="auth-hero">
+      <img src="data:image/png;base64,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" class="auth-hero-logo" alt="Logo">
+      <div class="auth-hero-title">🎓 校友帮 CampusHelper</div>
+      <div class="auth-hero-desc">全国高校学籍档案 · 成绩单 · 校友互助代办平台</div>
+    </div>
+
+    <div class="auth-card">
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" id="btnTabLogin" onclick="setAuthMode('login')">🔑 账号登录</button>
+        <button class="sub-tab-btn" id="btnTabReg" onclick="setAuthMode('register')">✨ 注册账号</button>
+        <button class="sub-tab-btn" id="btnTabForgot" onclick="setAuthMode('forgot')">🔒 找回密码</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">电子邮箱 <span class="req">*</span>：</label>
+        <input type="email" class="form-control" id="inpAuthEmail" placeholder="name@example.com">
+      </div>
+
+      <div class="form-group" id="grpAuthPwd">
+        <label class="form-label">登录密码 <span class="req">*</span>：</label>
+        <input type="password" class="form-control" id="inpAuthPassword" placeholder="请输入密码">
+      </div>
+
+      <div class="form-group" id="grpAuthCode" style="display: none;">
+        <label class="form-label">邮箱验证码 <span class="req">*</span>：</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" class="form-control" id="inpAuthCode" placeholder="6位数字验证码">
+          <button class="btn btn-outline" type="button" id="btnGetAuthCode" style="white-space:nowrap; font-size:12px;" onclick="handleSendCodeClick()">获取验证码</button>
+        </div>
+      </div>
+
+      <button class="btn btn-block btn-success" style="margin-top: 16px; padding: 12px;" id="btnAuthSubmit" onclick="handleAuthSubmitClick()">🚀 登 录</button>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
+      高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
+      Version v1.4.7 (Build 147)
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- 容器 2: 已登录主小程序工作台 -->
+  <!-- ============================================================= -->
+  <div id="appMainContainer">
+    <!-- 顶部导航 -->
+    <div class="top-navbar">
+      <div class="top-logo">
+        <img src="data:image/png;base64,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" alt="Logo">
+        <span>校友帮</span>
+        <span class="role-badge" id="topRoleBadge">学生校友</span>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button class="btn btn-sm btn-outline" onclick="showRoleSwitchModal()">🔄 换身份</button>
+        <button class="btn btn-sm btn-outline" style="color:var(--danger);" onclick="handleLogout()">登出</button>
+      </div>
+    </div>
+
+    <!-- 主体视图 -->
+    <div class="app-body">
+      
+      <!-- Tab 1: 办理订单 -->
+      <div id="tabViewTasks">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-weight: 800; font-size: 16px;" id="tasksSectionTitle">📋 办理订单</span>
+          <button class="btn btn-sm btn-success" id="btnCreateTaskTop" onclick="openCreateTaskModal()">➕ 发起代办</button>
+        </div>
+
+        <div class="sub-tabs" id="taskSubTabs">
+          <button class="sub-tab-btn active" onclick="switchTaskFilter('all')">全部</button>
+          <button class="sub-tab-btn" onclick="switchTaskFilter('pending')">待接单</button>
+          <button class="sub-tab-btn" onclick="switchTaskFilter('accepted')">办理中</button>
+          <button class="sub-tab-btn" onclick="switchTaskFilter('completed')">已办结</button>
+        </div>
+
+        <div id="taskListContainer">
+          <div style="text-align: center; padding: 30px; color: #94a3b8;">⏳ 正在读取订单数据...</div>
+        </div>
+      </div>
+
+      <!-- Tab 2: 校友消息与系统消息中心 -->
+      <div id="tabViewMessages" style="display: none;">
+        <!-- 视图 A: 消息中心 (顶部支持切换: 📢 系统通知公告 / 💬 订单即时沟通) -->
+        <div id="imOrdersListView">
+          <!-- 消息分类切换导航 -->
+          <div style="display:flex; background:#e2e8f0; border-radius:10px; padding:3px; margin-bottom:14px; gap:4px;">
+            <div id="subTabSysMsg" onclick="switchMessageSubTab('system')" style="flex:1; text-align:center; padding:8px 6px; font-size:13px; font-weight:700; border-radius:8px; cursor:pointer; background:#fff; color:#2563eb; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+              📢 系统广播通知 <span id="sysMsgDot" style="display:none; width:7px; height:7px; background:#ef4444; border-radius:50%; margin-left:2px; vertical-align:middle;"></span>
+            </div>
+            <div id="subTabOrderMsg" onclick="switchMessageSubTab('order')" style="flex:1; text-align:center; padding:8px 6px; font-size:13px; font-weight:600; border-radius:8px; cursor:pointer; background:transparent; color:#64748b;">
+              💬 订单即时沟通
+            </div>
+          </div>
+
+          <!-- 子面板 1: 系统广播通知中心 -->
+          <div id="panelSystemMessages">
+            <div class="card" style="background:#eff6ff; border-color:#bfdbfe; font-size:12px; color:#1e40af; margin-bottom:12px;">
+              📢 <strong>平台消息中心</strong>：接收全平台重要公告、教务处窗口放假与加急办理通知。
+            </div>
+            <div id="systemBroadcastListContainer">
+              <div style="text-align: center; padding: 30px; color: #94a3b8;">⏳ 正在读取系统消息...</div>
+            </div>
+          </div>
+
+          <!-- 子面板 2: 订单沟通会话列表 -->
+          <div id="panelOrderMessages" style="display:none;">
+            <div class="card" style="background:#f0fdf4; border-color:#bbf7d0; font-size:12px; color:#166534; margin-bottom:12px;">
+              💬 <strong>跑腿沟通室</strong>：在校代办员承接订单后，双方在此开启图文沟通与盖章进度核对。
+            </div>
+            <div id="imChatListContainer">
+              <div style="text-align: center; padding: 30px; color: #94a3b8;">⏳ 正在拉取进行中的订单沟通...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 视图 B: 单个订单聊天详情面板 -->
+        <div id="imChatRoomView" style="display: none; flex-direction: column; height: calc(100vh - 145px);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f1f5f9; border-radius:8px; margin-bottom:8px;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="closeImChatRoom()">◀ 返回会话列表</button>
+            <span id="imChatRoomTitle" style="font-weight:700; font-size:13px; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">💬 订单沟通</span>
+            <button type="button" class="btn btn-sm btn-outline" onclick="refreshImMessages(true)">🔄 刷新</button>
+          </div>
+
+          <!-- 消息滚动列表 -->
+          <div id="imMessageList" style="flex:1; overflow-y:auto; background:#ffffff; border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:8px; min-height:260px; max-height:calc(100vh - 275px);">
+            <div style="text-align:center; padding:20px; color:#94a3b8; font-size:12px;">⏳ 加载聊天记录...</div>
+          </div>
+
+          <!-- 快捷话术胶囊 -->
+          <div id="imQuickPhrases" style="display:flex; gap:6px; overflow-x:auto; padding:4px 0 8px 0; -webkit-overflow-scrolling:touch;"></div>
+
+          <!-- 发送输入栏 -->
+          <div style="display:flex; gap:6px; align-items:center;">
+            <label class="btn btn-outline" style="cursor:pointer; padding:8px 10px; font-size:14px;" title="现场拍照/发送图片">
+              📷
+              <input type="file" id="imImageFileInput" accept="image/*" style="display:none;" onchange="handleSendImImage(event)">
+            </label>
+            <input type="text" id="imTextInput" class="form-control" style="flex:1; padding:8px 12px; font-size:13px;" placeholder="输入沟通内容..." onkeydown="if(event.key==='Enter') handleSendImText()">
+            <button type="button" class="btn btn-primary" style="padding:8px 14px; font-size:13px; font-weight:700;" onclick="handleSendImText()">发送</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: 扫一扫 -->
+      <div id="tabViewScan" style="display: none;">
+        <div class="card">
+          <div class="card-title"><span>📷 扫一扫 · 网页免密登录</span></div>
+          <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 12px;">
+            对准电脑网页端右上角的【📱 扫码登录】二维码，或从手机相册选取截图识别。
+          </p>
+          
+          <div style="position: relative; width: 100%; height: 240px; background: #000; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <video id="scanVideo" style="width: 100%; height: 100%; object-fit: cover;" playsinline></video>
+            <canvas id="scanCanvas" style="display: none;"></canvas>
+            <div style="position: absolute; border: 2px solid #2563eb; width: 170px; height: 170px; border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);"></div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button class="btn btn-block btn-primary" onclick="startCameraScan()">📹 启动摄像头扫描</button>
+            <label class="btn btn-outline btn-block" style="cursor: pointer;">
+              🖼️ 相册选图识别
+              <input type="file" id="qrFileInput" accept="image/*" style="display: none;" onchange="handleQrFileSelect(event)">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: 我的 -->
+      <div id="tabViewProfile" style="display: none;">
+        <div class="card" style="background: linear-gradient(135deg, #1e40af, #2563eb); color: #fff;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 22px;">
+              🎓
+            </div>
+            <div>
+              <div style="font-weight: 800; font-size: 16px;" id="profileUserEmail">校友用户</div>
+              <div style="font-size: 12px; opacity: 0.85;" id="profileUserRole">当前角色: 学生校友</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-list">
+          <div class="menu-item" onclick="openRealNameModal()">
+            <span>🪪 我的实名与收件信息</span>
+            <span class="arrow" id="profileRealNameStatusText">去实名 &gt;</span>
+          </div>
+          <div class="menu-item" onclick="openEducationModal()">
+            <span>🎓 我的学籍与教育经历</span>
+            <span class="arrow">管理 &gt;</span>
+          </div>
+          <div class="menu-item" id="adminPaymentConfigMenuItem" style="display:none;" onclick="openAdminPayConfigModal()">
+            <span>💳 支付通道与聚合收银台配置 (管理员)</span>
+            <span class="arrow">配置 &gt;</span>
+          </div>
+          <div class="menu-item" id="adminSchoolApproveMenuItem" style="display:none;" onclick="openAdminSchoolAppsModal()">
+            <span>🏫 高校开通申请审批 (管理员)</span>
+            <span class="arrow">审批 &gt;</span>
+          </div>
+          <div class="menu-item" onclick="openAgentApplyModal()">
+            <span>⚡ 申请成为校园认证代办员</span>
+            <span class="arrow">认证 &gt;</span>
+          </div>
+          <div class="menu-item" onclick="showRoleSwitchModal()">
+            <span>🔄 切换当前工作角色</span>
+            <span class="arrow">切换 &gt;</span>
+          </div>
+          <div class="menu-item" onclick="handleRequestBatteryOptimization()">
+            <span>🔋 后台锁屏消息通知保活授权</span>
+            <span class="arrow">设置 &gt;</span>
+          </div>
+          <div class="menu-item" onclick="openAboutModal()">
+            <span>ℹ️ 关于软件</span>
+            <span class="arrow">详情 &gt;</span>
+          </div>
+          <div class="menu-item" onclick="checkAppUpdate(true)">
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.4.7</span></span>
+            <span class="arrow">检测 &gt;</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 底部 4 大 Tab 栏 -->
+    <div class="bottom-tabbar">
+      <div class="tabbar-item active" id="tabNavTasks" onclick="switchMainTab('tasks')">
+        <div class="icon">📋</div>
+        <span>办理订单</span>
+      </div>
+      <div class="tabbar-item" id="tabNavMessages" onclick="switchMainTab('messages')">
+        <div class="tabbar-icon-wrap">
+          <div class="icon">💬</div>
+          <span class="unread-dot" id="msgUnreadBadge" style="display: none;">0</span>
+        </div>
+        <span>校友消息</span>
+      </div>
+      <div class="tabbar-item" id="tabNavScan" onclick="switchMainTab('scan')">
+        <div class="icon">📷</div>
+        <span>扫一扫</span>
+      </div>
+      <div class="tabbar-item" id="tabNavProfile" onclick="switchMainTab('profile')">
+        <div class="icon">👤</div>
+        <span>我的</span>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- 弹窗 6: 文件核对与底部手写签名全屏弹窗 -->
+  <div class="modal-overlay" id="signDocModal" style="z-index: 1050; display: none;">
+    <div class="modal-sheet" style="max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="modal-close-btn" onclick="closeSignDocModal()">✕</div>
+      <div class="card-title" style="flex-shrink: 0;">
+        <span id="signDocModalTitle">📄 业务委托书/申请表核对与签名</span>
+      </div>
+
+      <div style="flex: 1; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; margin-bottom: 10px;" id="signDocScrollContainer">
+        <div id="signDocPreviewContent" style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12px; line-height:1.6; color:#1e293b; margin-bottom:12px;">
+          <!-- 动态公文内容 -->
+        </div>
+
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:700; font-size:13px; color:#1e40af;">✍️ 委托人亲笔签名区域（在下方虚线框内书写）：</span>
+            <button class="btn btn-sm btn-outline" type="button" style="padding:2px 8px; font-size:11px;" onclick="clearSignature()">清空重写</button>
+          </div>
+          <div class="sign-canvas-box" id="signCanvasWrap">
+            <canvas id="signCanvas"></canvas>
+            <div id="signCanvasPlaceholder" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#cbd5e1; font-size:15px; font-weight:700; pointer-events:none; user-select:none;">请在此处用手指签名</div>
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-top:4px;">📌 提示：已开启屏幕防误触保护，滑动书写不会触发页面刷新或退出。</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-shrink: 0;">
+        <button class="btn btn-block btn-outline" type="button" onclick="closeSignDocModal()">返回修改</button>
+        <button class="btn btn-block btn-primary" type="button" onclick="confirmSignDocModal()">✅ 确认签名并应用</button>
+      </div>
+    </div>
+  </div>
+
+<!-- 弹窗 1: 发起 / 修改代办需求 -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal-sheet">
+      <div class="modal-close-btn" onclick="closeTaskModal()">✕</div>
+      <div class="card-title">
+        <span id="taskModalTitle">➕ 发起学籍档案代办</span>
+      </div>
+
+      <div class="modal-sheet-body">
+        <input type="hidden" id="taskEditId" value="">
+
+        <div class="form-group" id="groupQuickEdu">
+          <label class="form-label">📌 快速带入我的学籍档案：</label>
+          <select class="form-control" id="taskQuickEduSelect" onchange="applyQuickEduToTask()">
+            <option value="">-- 选择已录入的学籍自动填充高校与校区 --</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">办理高校 <span class="req">*</span>：</label>
+            <select class="form-control" id="taskSchoolSelect" onchange="handleTaskSchoolChange(this.value)">
+              <option value="">-- 请选择高校 --</option>
+            </select>
+            <div style="margin-top:4px; font-size:11px;">
+              <span style="color:#64748b;">未找到目标高校？</span>
+              <a href="javascript:void(0)" onclick="openSchoolApplyModal()" style="color:#2563eb; font-weight:700; text-decoration:underline;">👉 申请开通新高校</a>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">所在校区 <span class="req">*</span>：</label>
+            <select class="form-control" id="taskCampusSelect">
+              <option value="主校区">主校区</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">代办事项 <span class="req">*</span>：</label>
+          <select class="form-control" id="taskServiceSelect" onchange="handleTaskServiceChange(this.value)">
+            <option value="">-- 请选择办理事项 --</option>
+            <option value="补办毕业证明书/学位证明书">补办毕业证明书 / 学位证明书</option>
+            <option value="中文成绩单/英文成绩单加盖公章">中文成绩单 / 英文成绩单加盖公章</option>
+            <option value="毕业生录取花名册/毕业生登记表复印盖章">毕业生录取花名册 / 毕业生登记表复印盖章</option>
+            <option value="学籍档案调档/政审表盖章现场跑腿">学籍档案调档 / 政审表盖章现场跑腿</option>
+            <option value="其他教务档案事项">其他教务档案事项（手动输入）</option>
+          </select>
+          <input type="text" class="form-control" id="taskCustomService" style="margin-top:5px; display:none;" placeholder="请输入具体办理事项">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">跑腿服务报酬 (元) <span class="req">*</span>：</label>
+            <input type="number" class="form-control" id="taskFeeInput" value="100" min="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label">顺丰邮寄运费 (元)：</label>
+            <input type="number" class="form-control" id="taskPostFeeInput" value="23" min="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">办理要求与学号备注：</label>
+          <textarea class="form-control" id="taskDescInput" placeholder="请输入您的专业班级、学号、收件人电话地址以及窗口办理具体要求..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📋 办理所需材料清单（逐项拍照上传原件）：</label>
+          <div id="taskMaterialRowsContainer"></div>
+        </div>
+
+        <div class="form-group" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label class="form-label" style="margin:0; font-weight:700; color:#1e40af;">✍️ 委托人电子手写签名（窗口代办授权）：</label>
+            <button class="btn btn-sm" type="button" style="background:#2563eb; color:#fff; padding:3px 10px; font-size:12px; font-weight:700;" onclick="openSignDocModal()">📄 查看文件内容并在底部签名</button>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; color:#475569;">
+            <span id="taskSignatureStatusText">待签名（点击上方按钮查看单据并签名）</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <img id="taskSignatureThumbPreview" style="height:32px; border-radius:4px; border:1px solid #3b82f6; display:none; background:#fff;">
+              <button class="btn btn-sm btn-outline" type="button" style="padding:2px 6px; font-size:11px;" onclick="openSignDocModal()">✍️ 重签/修改</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-sheet-footer">
+        <button class="btn btn-block btn-success" onclick="submitSaveTask()">💾 确认发布 / 保存代办需求</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 2: 我的学籍经历管理 -->
+  <div class="modal-overlay" id="eduModal">
+    <div class="modal-sheet" style="max-height: 88vh; display: flex; flex-direction: column;">
+      <div class="modal-close-btn" onclick="closeEducationModal()">✕</div>
+      <div class="card-title" style="flex-shrink: 0; margin-bottom: 8px;">
+        <span>🎓 我的学籍与教育经历</span>
+      </div>
+
+      <div class="modal-sheet-body">
+        <div id="eduListContainer" style="margin-bottom: 12px;">
+          <div style="text-align:center; padding:15px; color:#94a3b8;">正在读取学籍列表...</div>
+        </div>
+
+        <div class="card" style="background:#f8fafc; border:1px solid #cbd5e1; margin-bottom: 10px;">
+          <div style="font-weight:700; font-size:13px; margin-bottom:8px;" id="eduFormTitle">➕ 添加新学籍档案</div>
+          <input type="hidden" id="eduEditId" value="">
+
+          <div class="form-group">
+            <label class="form-label">学历层次 <span class="req">*</span>：</label>
+            <select class="form-control" id="eduLevelSelect">
+              <option value="本科">本科</option>
+              <option value="专科">专科</option>
+              <option value="硕士研究生">硕士研究生</option>
+              <option value="博士研究生">博士研究生</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">高校全称 <span class="req">*</span>：</label>
+              <select class="form-control" id="eduSchoolSelect" onchange="handleEduSchoolChange(this.value)">
+                <option value="">-- 选择高校 --</option>
+              </select>
+              <div style="margin-top:4px; font-size:11px;">
+                <span style="color:#64748b;">没有您的学校？</span>
+                <a href="javascript:void(0)" onclick="openSchoolApplyModal()" style="color:#2563eb; font-weight:700; text-decoration:underline;">👉 申请开通新高校</a>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">校区：</label>
+              <select class="form-control" id="eduCampusSelect">
+                <option value="主校区">主校区</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">分院 / 系所：</label>
+            <input type="text" class="form-control" id="eduBranchSchoolInput" placeholder="例如：信息科学与技术学院 (选填)">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">专业全称 <span class="req">*</span>：</label>
+              <input type="text" class="form-control" id="eduMajorInput" placeholder="如: 计算机科学与技术">
+            </div>
+            <div class="form-group">
+              <label class="form-label">学号 <span class="req">*</span>：</label>
+              <input type="text" class="form-control" id="eduStudentNoInput" placeholder="学籍学号">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">入学年份：</label>
+              <input type="number" class="form-control" id="eduStartYear" placeholder="如: 2020">
+            </div>
+            <div class="form-group">
+              <label class="form-label">毕业年份：</label>
+              <input type="number" class="form-control" id="eduEndYear" placeholder="如: 2024">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">毕业证书编号：</label>
+              <input type="text" class="form-control" id="eduDiplomaNoInput" placeholder="18位编号 (选填)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">学位证书编号：</label>
+              <input type="text" class="form-control" id="eduDegreeNoInput" placeholder="16位编号 (选填)">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">获得学位：</label>
+              <input type="text" class="form-control" id="eduDegreeInput" placeholder="如: 工学学士 (选填)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">备注说明：</label>
+              <input type="text" class="form-control" id="eduRemarkInput" placeholder="其他备注 (选填)">
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="btn btn-block btn-success" onclick="submitSaveEducation()">💾 保存学籍信息</button>
+            <button class="btn btn-outline" id="btnCancelEduEdit" style="display:none;" onclick="resetEduForm()">取消修改</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 12: 管理员高校开通申请审批弹窗 -->
+  <div class="modal-overlay" id="adminSchoolAppsModal">
+    <div class="modal-sheet" style="max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-sheet-header">
+        <h3 class="modal-sheet-title">🏫 高校开通申请审批与入驻</h3>
+        <button type="button" class="btn-close-sheet" onclick="closeAdminSchoolAppsModal()">&times;</button>
+      </div>
+      <div class="modal-sheet-body" style="padding:14px;" id="adminSchoolAppsListContainer">
+        <div style="text-align:center; padding:20px; color:#94a3b8;">⏳ 正在读取申请列表...</div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="schoolApplyModal">
+    <div class="modal-sheet" style="max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-sheet-header">
+        <h3 class="modal-sheet-title">🏫 申请开通我的高校</h3>
+        <button type="button" class="btn-close-sheet" onclick="closeSchoolApplyModal()">&times;</button>
+      </div>
+      <div class="modal-sheet-body" style="padding:16px;">
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px 12px; border-radius:8px; margin-bottom:12px; font-size:12px; color:#1e40af; line-height:1.5;">
+          💡 <strong>说明：</strong>若列表中暂未收录您的母校，请填写高校全称提交申请。管理员联系并匹配到该校在校代办员后将立即为您开通，开通后系统会自动向您发送通知！
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">高校全称 <span class="req">*</span>：</label>
+          <input type="text" class="form-control" id="mApplySchoolName" placeholder="例如：华中科技大学 / 武汉理工大学">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">所在省份：</label>
+            <input type="text" class="form-control" id="mApplyProvince" value="湖北" placeholder="如: 湖北 / 北京">
+          </div>
+          <div class="form-group">
+            <label class="form-label">所在城市：</label>
+            <input type="text" class="form-control" id="mApplyCity" value="武汉" placeholder="如: 武汉 / 武昌">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">主要校区分布 (逗号分隔)：</label>
+          <input type="text" class="form-control" id="mApplyCampuses" value="主校区" placeholder="如: 主校区, 东校区, 南湖校区">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">办理需求补充说明 (选填)：</label>
+          <textarea class="form-control" id="mApplyNotes" rows="2" placeholder="例如：急需补办2020届毕业成绩单与四六级证明..."></textarea>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-block" onclick="submitSchoolApply()">🚀 提交开通申请</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="mobilePersonalPayModal">
+    <div class="modal-sheet" style="max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-sheet-header">
+        <h3 class="modal-sheet-title">📱 扫码付款与上传转账凭证</h3>
+        <button type="button" class="btn-close-sheet" onclick="closeMobilePersonalPayModal()">&times;</button>
+      </div>
+      <div class="modal-sheet-body" style="padding:16px;">
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:12px; border-radius:8px; margin-bottom:12px; font-size:13px; color:#1e40af;">
+          <strong>待支付金额：</strong><span id="mPersonalPayAmount" style="font-size:16px; font-weight:700; color:#dc2626;">￥0.00</span>
+          <div id="mPersonalPayNotes" style="font-size:12px; color:#475569; margin-top:4px;"></div>
+        </div>
+
+        <div style="text-align:center; margin-bottom:14px;">
+          <div style="font-weight:700; font-size:13px; color:#334155; margin-bottom:6px;">📷 平台官方收款码 (支持微信 / 支付宝扫码)：</div>
+          <div id="mPersonalPayQRContainer" style="min-height:160px; display:flex; justify-content:center; align-items:center;">
+            <span style="color:#94a3b8; font-size:12px;">加载收款码中...</span>
+          </div>
+        </div>
+
+        <div style="border-top:1px dashed #cbd5e1; padding-top:12px;">
+          <div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:6px;">📤 上传付款成功截图凭证 <span class="req">*</span>：</div>
+          <input type="file" id="mPersonalPayProofInput" accept="image/*" class="form-control" onchange="previewMobileProof(event)" style="margin-bottom:8px;">
+          <div id="mPersonalPayProofPreview" style="text-align:center; display:none; margin-bottom:10px;">
+            <img id="mPersonalPayProofImg" src="" style="max-height:140px; border-radius:6px; border:1px solid #93c5fd;">
+          </div>
+          <button type="button" class="btn btn-primary btn-block" onclick="submitMobilePersonalPayProof()">✅ 确认提交转账凭证</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="adminPayConfigModal">
+    <div class="modal-sheet" style="max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="modal-close-btn" onclick="closeAdminPayConfigModal()">✕</div>
+      <div class="card-title" style="flex-shrink: 0; margin-bottom: 8px;">
+        <span>💳 支付通道与聚合收银台配置</span>
+      </div>
+
+      <div class="modal-sheet-body">
+        <div class="alert-box" style="background:#f0fdf4; border-color:#86efac; color:#166534; font-size:12px; margin-bottom:10px;">
+          💡 <strong>Sub2API 架构全面对齐</strong>：支持个人码、易支付 (EasyPay)、支付宝直连 (Alipay)、微信支付 (WxPay) 与自定义网关多驱动自由配置！
+        </div>
+
+        <!-- 1. 核心开关 -->
+        <div style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:10px;">
+          <div style="font-weight:700; font-size:13px; margin-bottom:6px;">🛠️ 支付通道模式开关：</div>
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:6px; cursor:pointer;">
+            <input type="checkbox" id="mAdminEnablePersonal" checked> 开启个人收款码 (手动转账 + 凭证审核)
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#2563eb; font-weight:700; cursor:pointer;">
+            <input type="checkbox" id="mAdminEnableOnline"> 开启在线聚合支付 (系统自动秒级回调改单)
+          </label>
+        </div>
+
+        <!-- 2. 支付平台切换 -->
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label" style="font-weight:700;">选定生效的聚合支付平台驱动：</label>
+          <select class="form-control" id="mAdminActiveGateway" onchange="switchMobileGatewayPanel(this.value)">
+            <option value="easypay">⚡ 易支付 / Sub2API 聚合接口 (EasyPay 标准协议)</option>
+            <option value="zpay">💎 ZPay 个人免签直连 (微信/支付宝个人免营业执照 API)</option>
+            <option value="alipay_direct">🔵 支付宝官方直连 (当面付 / 手机网站 WAP)</option>
+            <option value="wxpay_direct">🟢 微信支付官方直连 (WxPay V3 商户平台)</option>
+            <option value="custom">🌐 自定义聚合支付网关</option>
+          </select>
+        </div>
+
+        <!-- 驱动 A: 易支付 (EasyPay) / ZPay (兼容易支付协议免签平台) -->
+        <div id="mPanelEasypay" style="background:#eff6ff; padding:10px; border-radius:6px; border:1px solid #bfdbfe; margin-bottom:12px;">
+          <div style="font-weight:700; font-size:13px; color:#1e40af; margin-bottom:6px;" id="mTitleEasypay">⚡ 易支付 / ZPay 网关参数配置：</div>
+          <div class="form-group">
+            <label class="form-label">网关地址 (API Base) <span class="req">*</span>：</label>
+            <input type="text" class="form-control" id="mAdminEpApiBase" value="https://sub.cnkiedu.cn" placeholder="如 https://sub.cnkiedu.cn 或 https://z-pay.cn">
+          </div>
+          <div class="form-group">
+            <label class="form-label">商户 ID (PID / UID) <span class="req">*</span>：</label>
+            <input type="text" class="form-control" id="mAdminEpPid" placeholder="请输入商户号 PID 或 ZPay UID">
+          </div>
+          <div class="form-group">
+            <label class="form-label">商户通信密钥 (Key / PKey / Token) <span class="req">*</span>：</label>
+            <input type="password" class="form-control" id="mAdminEpPkey" placeholder="请输入商户通信密钥 Key">
+          </div>
+          <div class="form-group">
+            <label class="form-label">异步通知回调地址 (Notify URL) <span style="font-size:11px; color:#64748b;">(留空使用默认)</span>：</label>
+            <input type="text" class="form-control" id="mAdminEpNotifyUrl" placeholder="默认: https://www.cnkiedu.cn/api/payment/notify/easypay">
+          </div>
+          <div class="form-group">
+            <label class="form-label">同步支付跳转地址 (Return URL) <span style="font-size:11px; color:#64748b;">(留空使用默认)</span>：</label>
+            <input type="text" class="form-control" id="mAdminEpReturnUrl" placeholder="默认: https://www.cnkiedu.cn/m?payment_order=">
+          </div>
+        </div>
+
+        <!-- 驱动 B: 支付宝直连 -->
+        <div id="mPanelAlipay" style="display:none; background:#f0f9ff; padding:10px; border-radius:6px; border:1px solid #bae6fd; margin-bottom:12px;">
+          <div style="font-weight:700; font-size:13px; color:#0369a1; margin-bottom:6px;">🔵 支付宝官方直连参数：</div>
+          <div class="form-group">
+            <label class="form-label">应用 AppID <span class="req">*</span>：</label>
+            <input type="text" class="form-control" id="mAdminAliAppId" placeholder="例如 20210001...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">应用私钥 (Private Key)：</label>
+            <textarea class="form-control" id="mAdminAliPrivateKey" rows="2" placeholder="RSA2 应用私钥..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">支付宝公钥 (Public Key)：</label>
+            <textarea class="form-control" id="mAdminAliPublicKey" rows="2" placeholder="支付宝公钥..."></textarea>
+          </div>
+        </div>
+
+        <!-- 驱动 C: 微信支付直连 -->
+        <div id="mPanelWxpay" style="display:none; background:#f0fdf4; padding:10px; border-radius:6px; border:1px solid #bbf7d0; margin-bottom:12px;">
+          <div style="font-weight:700; font-size:13px; color:#166534; margin-bottom:6px;">🟢 微信支付 V3 直连参数：</div>
+          <div class="form-group">
+            <label class="form-label">微信 AppID / 小程序 ID：</label>
+            <input type="text" class="form-control" id="mAdminWxAppId" placeholder="例如 wx888888...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">微信支付商户号 (MchID) <span class="req">*</span>：</label>
+            <input type="text" class="form-control" id="mAdminWxMchId" placeholder="例如 190000...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">APIv3 密钥 (32位 Key)：</label>
+            <input type="password" class="form-control" id="mAdminWxApiV3Key" placeholder="32位 APIv3 密钥">
+          </div>
+        </div>
+
+        <!-- 驱动 D: 个人收款码 -->
+        <div style="background:#faf5ff; padding:10px; border-radius:6px; border:1px solid #e9d5ff; margin-bottom:12px;">
+          <div style="font-weight:700; font-size:13px; color:#6b21a8; margin-bottom:6px;">📱 个人收款码设置 (微信/支付宝个人码)：</div>
+          <div id="mAdminQRPreview" style="text-align:center; margin-bottom:8px;"></div>
+          <div class="form-group">
+            <label class="form-label">上传新个人收款码图片：</label>
+            <input type="file" id="mAdminQRInput" accept="image/*" class="form-control" onchange="handleMobileAdminQRSelect(this)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">转账附言/提示说明：</label>
+            <textarea class="form-control" id="mAdminQRNotes" rows="2" placeholder="例如：请使用支付宝/微信扫码付款..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-sheet-footer">
+        <button class="btn btn-block btn-primary" onclick="submitMobileAdminPayConfig()">💾 保存支付通道与收银台配置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模态框: 移动端查看与导出 PDF 单据 -->
+  <div class="modal-overlay" id="mobileDocPreviewModal" style="z-index: 1060; display: none;">
+    <div class="modal-sheet" style="max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="modal-sheet-header">
+        <h3 class="modal-sheet-title" id="mobileDocPreviewTitle">📄 办理附件打包汇总单</h3>
+        <button type="button" class="btn-close-sheet" onclick="document.getElementById('mobileDocPreviewModal').style.display='none'">&times;</button>
+      </div>
+      <div class="modal-sheet-body" style="padding: 12px; overflow-y: auto; flex: 1;" id="mobileDocPreviewBody">
+      </div>
+      <div class="modal-sheet-footer" style="padding: 10px 14px; background: #fff; border-top: 1px solid var(--border); display: flex; gap: 8px;">
+        <button type="button" class="btn btn-outline btn-block" onclick="document.getElementById('mobileDocPreviewModal').style.display='none'">关闭</button>
+        <button type="button" class="btn btn-primary btn-block" style="background:#2563eb;" onclick="downloadMobilePdfFile()">📥 导出 / 保存 PDF 文件</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 8: 委托人实名认证与收件地址维护 -->
+  <div class="modal-overlay" id="realNameModal">
+    <div class="modal-sheet" style="max-height: 88vh; display: flex; flex-direction: column;">
+      <div class="modal-close-btn" onclick="closeRealNameModal()">✕</div>
+      <div class="card-title" style="flex-shrink: 0; margin-bottom: 8px;">
+        <span>🪪 我的实名与收件信息</span>
+      </div>
+
+      <div class="modal-sheet-body">
+        <div class="card" style="background:#eff6ff; border-color:#bfdbfe; font-size:12px; color:#1e40af; line-height:1.6; margin-bottom:12px;">
+          🛡️ <strong>实名与寄件说明</strong>：根据高校教务处与档案馆规定，委托线下代办必须提供委托人真实身份信息，办理完毕后将通过顺丰寄送至您的收件地址。
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">真实姓名 <span class="req">*</span>：</label>
+            <input type="text" class="form-control" id="realNameInput" placeholder="本人真实中文姓名">
+          </div>
+          <div class="form-group">
+            <label class="form-label">手机号码 <span class="req">*</span>：</label>
+            <input type="tel" class="form-control" id="realPhoneInput" placeholder="用于代办员联系与顺丰收件">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">身份证号码 <span class="req">*</span>：</label>
+          <input type="text" class="form-control" id="realIdCardInput" placeholder="18位居民身份证号">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">档案收件地址（顺丰直达） <span class="req">*</span>：</label>
+          <textarea class="form-control" id="realAddressInput" rows="3" placeholder="请详细填写 省、市、区/县、详细街道及门牌号，确保档案精准送达..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-sheet-footer">
+        <button class="btn btn-block btn-success" onclick="submitSaveRealNameProfile()">💾 保存实名与收件信息</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 3: 申请成为在校认证代办员 -->
+  <div class="modal-overlay" id="agentApplyModal">
+    <div class="modal-sheet">
+      <div class="modal-close-btn" onclick="closeAgentApplyModal()">✕</div>
+      <div class="card-title">
+        <span>⚡ 申请成为校园认证代办员</span>
+      </div>
+
+      <div class="modal-sheet-body">
+        <div class="card" style="background:#eff6ff; border-color:#bfdbfe; font-size:12px; color:#1e40af; line-height:1.6;">
+          🛡️ <strong>认证说明</strong>：成为代办员后可承接本校校友的学籍档案跑腿业务并获得丰厚报酬。需提交在校真实身份证明材料以供平台人工审核。
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">真实姓名 <span class="req">*</span>：</label>
+            <input type="text" class="form-control" id="agentRealName" placeholder="必须与身份证一致">
+          </div>
+          <div class="form-group">
+            <label class="form-label">联系手机 <span class="req">*</span>：</label>
+            <input type="tel" class="form-control" id="agentPhone" placeholder="常用手机号">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">常驻在校高校 <span class="req">*</span>：</label>
+            <select class="form-control" id="agentSchoolSelect" onchange="handleAgentSchoolChange(this.value)">
+              <option value="">-- 选择高校 --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">所在校区 <span class="req">*</span>：</label>
+            <select class="form-control" id="agentCampusSelect">
+              <option value="主校区">主校区</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">结算实名支付宝账号 <span class="req">*</span>：</label>
+          <input type="text" class="form-control" id="agentAlipay" placeholder="用于平台结算跑腿劳务报酬">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">🪪 本人身份证原件照片（支持拍照）：</label>
+          <div class="material-row-item">
+            <span id="agentIdCardText" style="font-size:12px; color:#64748b;">待拍照上传</span>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;">
+              📷 拍照上传
+              <input type="file" accept="image/*" style="display:none;" onchange="handleAgentSingleUpload(event, 'id_card')">
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📑 学信网在籍验证报告 / 学生证照片：</label>
+          <div class="material-row-item">
+            <span id="agentReportText" style="font-size:12px; color:#64748b;">待拍照上传</span>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;">
+              📷 拍照上传
+              <input type="file" accept="image/*" style="display:none;" onchange="handleAgentSingleUpload(event, 'report')">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-sheet-footer">
+        <button class="btn btn-block btn-success" onclick="submitAgentApplication()">🚀 提交实名代办员认证申请</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 7: App 扫码内嵌手写签名全屏弹窗 (防止跳出与刷新丢失) -->
+  <div class="modal-overlay" id="standaloneSignModal" style="z-index: 1100; padding: 0; background: #fff; display: none;">
+    <div style="width: 100vw; height: 100vh; display: flex; flex-direction: column; background: #f8fafc;">
+      <div style="background: #2563eb; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+        <span style="font-weight: 700; font-size: 15px;">✍️ 电脑端代办单据 · 手机端在线手写手签</span>
+        <button type="button" onclick="closeStandaloneSignModal()" style="background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 13px; cursor: pointer;">✕ 关闭退出</button>
+      </div>
+      <div style="background: #eff6ff; color: #1e40af; padding: 8px 14px; font-size: 12px; border-bottom: 1px solid #bfdbfe; flex-shrink: 0; line-height: 1.5;">
+        📌 提示：您已通过 App 扫码进入签名通道。请在下方空白处用手指书写您的真实姓名，点击确认后将秒级自动同步至电脑端并合成单据！
+      </div>
+      <div style="flex: 1; position: relative; margin: 12px; background: #fff; border: 2px dashed #3b82f6; border-radius: 12px; overflow: hidden; touch-action: none;">
+        <canvas id="standaloneSignCanvas" style="width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair;"></canvas>
+        <div id="standaloneSignPlaceholder" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #cbd5e1; font-size: 18px; font-weight: 700; pointer-events: none; user-select: none;">请在此处用手指签名</div>
+      </div>
+      <div style="padding: 12px 16px 20px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; flex-shrink: 0;">
+        <button class="btn btn-block btn-outline" type="button" style="padding: 12px;" onclick="clearStandaloneSign()">清空重写</button>
+        <button class="btn btn-block btn-primary" type="button" style="padding: 12px;" onclick="submitStandaloneSign()">✅ 确认签名并同步至电脑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 4: 切换工作角色 -->
+  <div class="modal-overlay" id="roleSwitchModal">
+    <div class="modal-sheet">
+      <div class="modal-close-btn" onclick="closeRoleSwitchModal()">✕</div>
+      <div class="card-title">
+        <span>🔄 切换当前工作角色</span>
+      </div>
+      <div class="modal-sheet-body">
+        <p style="font-size:12px; color:var(--text-sub); margin-bottom:12px;">
+          展示您当前登录账号名下的全部角色，点击直接切换：
+        </p>
+        <div id="roleSwitchListContainer">
+          <div style="text-align:center; padding:20px; color:#94a3b8;">正在拉取角色权限...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 核心交互脚本 -->
+  <script>
+    var CURRENT_VERSION = '1.4.7';
+    var CURRENT_BUILD = 147;
+    var currentUser = null;
+    var currentRole = 'student';
+    var availableSchools = [];
+    var taskListCache = [];
+    var currentTaskFilter = 'all';
+    var currentTaskMaterials = [];
+    var agentIdCardBase64 = null;
+    var agentReportBase64 = null;
+    var currentAuthMode = 'login';
+    var scanStream = null;
+
+    var signCanvas, signCtx, isDrawing = false;
+
+    window.addEventListener('DOMContentLoaded', async function() {
+      try {
+        initSignCanvas();
+        await loadPublicSchools();
+        await checkAuthAndLoadUser();
+      } catch (e) {
+        console.error('Init error:', e);
+      }
+    });
+
+    function formatAgentMaskedName(name) {
+      if (!name) return '在校代办员';
+      var s = name.trim();
+      if (!s) return '在校代办员';
+      // 提取姓氏
+      var surname = s.charAt(0);
+      return surname + '同学 (代办员)';
+    }
+
+    function formatStudentMaskedName(name, email) {
+      if (name && name.trim()) {
+        return name.trim().charAt(0) + '同学 (委托人)';
+      }
+      if (email && email.trim()) {
+        var pre = email.split('@')[0];
+        if (pre.length > 3) return pre.substring(0, 3) + '***同学 (委托人)';
+        return pre + '同学 (委托人)';
+      }
+      return '校友同学 (委托人)';
+    }
+    // -------------------------------------------------------------
+    var standaloneSignCanvas = null;
+    var standaloneSignCtx = null;
+    var isStandaloneDrawing = false;
+    var currentStandaloneSignToken = null;
+
+    function openStandaloneSignModal(urlOrToken) {
+      var token = urlOrToken;
+      if (token.indexOf('/sign/') !== -1) {
+        token = token.split('/sign/')[1].split('?')[0].split('&')[0];
+      }
+      currentStandaloneSignToken = token;
+      setAppSwipeRefresh(false); // 彻底禁用下拉刷新
+
+      var modal = document.getElementById('standaloneSignModal');
+      if (modal) modal.style.display = 'block';
+
+      setTimeout(function() {
+        initStandaloneSignCanvas();
+      }, 100);
+    }
+
+    function closeStandaloneSignModal() {
+      var modal = document.getElementById('standaloneSignModal');
+      if (modal) modal.style.display = 'none';
+      setAppSwipeRefresh(true); // 恢复下拉刷新
+    }
+
+    function initStandaloneSignCanvas() {
+      standaloneSignCanvas = document.getElementById('standaloneSignCanvas');
+      if (!standaloneSignCanvas) return;
+      standaloneSignCtx = standaloneSignCanvas.getContext('2d');
+
+      function resize() {
+        if (!standaloneSignCanvas) return;
+        var rect = standaloneSignCanvas.getBoundingClientRect();
+        if (rect.width > 0) {
+          standaloneSignCanvas.width = rect.width * 2;
+          standaloneSignCanvas.height = rect.height * 2;
+          standaloneSignCtx.scale(2, 2);
+          standaloneSignCtx.lineWidth = 3.5;
+          standaloneSignCtx.lineCap = 'round';
+          standaloneSignCtx.lineJoin = 'round';
+          standaloneSignCtx.strokeStyle = '#0f172a';
+        }
+      }
+      resize();
+
+      function getPos(e) {
+        var rect = standaloneSignCanvas.getBoundingClientRect();
+        var clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+        var clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function startDraw(e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        isStandaloneDrawing = true;
+        var placeholder = document.getElementById('standaloneSignPlaceholder');
+        if (placeholder) placeholder.style.display = 'none';
+        var pos = getPos(e);
+        standaloneSignCtx.beginPath();
+        standaloneSignCtx.moveTo(pos.x, pos.y);
+      }
+
+      function draw(e) {
+        if (!isStandaloneDrawing) return;
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        var pos = getPos(e);
+        standaloneSignCtx.lineTo(pos.x, pos.y);
+        standaloneSignCtx.stroke();
+      }
+
+      function endDraw(e) {
+        if (e && e.cancelable) e.preventDefault();
+        if (e) e.stopPropagation();
+        isStandaloneDrawing = false;
+      }
+
+      standaloneSignCanvas.onmousedown = startDraw;
+      standaloneSignCanvas.onmousemove = draw;
+      standaloneSignCanvas.onmouseup = endDraw;
+      standaloneSignCanvas.onmouseleave = endDraw;
+
+      standaloneSignCanvas.addEventListener('touchstart', startDraw, { passive: false, capture: true });
+      standaloneSignCanvas.addEventListener('touchmove', draw, { passive: false, capture: true });
+      standaloneSignCanvas.addEventListener('touchend', endDraw, { passive: false, capture: true });
+      standaloneSignCanvas.addEventListener('touchcancel', endDraw, { passive: false, capture: true });
+    }
+
+    function clearStandaloneSign() {
+      if (!standaloneSignCanvas || !standaloneSignCtx) return;
+      standaloneSignCtx.clearRect(0, 0, standaloneSignCanvas.width, standaloneSignCanvas.height);
+      var placeholder = document.getElementById('standaloneSignPlaceholder');
+      if (placeholder) placeholder.style.display = 'block';
+    }
+
+    async function submitStandaloneSign() {
+      if (!standaloneSignCanvas || !standaloneSignCtx) return;
+      var w = standaloneSignCanvas.width;
+      var h = standaloneSignCanvas.height;
+      var isEmpty = true;
+      try {
+        var imgData = standaloneSignCtx.getImageData(0, 0, w, h);
+        for (var i = 3; i < imgData.data.length; i += 4) {
+          if (imgData.data[i] > 0) { isEmpty = false; break; }
+        }
+      } catch (e) { isEmpty = false; }
+
+      if (isEmpty) {
+        alert('请在中间虚线区域用手指完整书写您的姓名后再提交！');
+        return;
+      }
+
+      var signatureBase64 = standaloneSignCanvas.toDataURL('image/png');
+      try {
+        var res = await safeFetchJson('/api/sign/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: currentStandaloneSignToken,
+            signature_data: signatureBase64,
+            signature: signatureBase64
+          })
+        });
+
+        if (res && res.success) {
+          alert('🎉 签名已成功同步至电脑端！单据已合成完成！');
+          closeStandaloneSignModal();
+        } else {
+          alert('提交签名失败: ' + (res ? (res.error || res.message) : '签名会话已过期'));
+        }
+      } catch (err) {
+        alert('网络请求异常: ' + err.message);
+      }
+    }
+
+    function initSignCanvas() {
+      signCanvas = document.getElementById('signCanvas');
+      if (!signCanvas) return;
+      signCtx = signCanvas.getContext('2d');
+
+      function resizeCanvas() {
+        if (!signCanvas) return;
+        var rect = signCanvas.getBoundingClientRect();
+        if (rect.width > 0) {
+          signCanvas.width = rect.width * 2;
+          signCanvas.height = rect.height * 2;
+          signCtx.scale(2, 2);
+          signCtx.lineWidth = 3.0;
+          signCtx.lineCap = 'round';
+          signCtx.lineJoin = 'round';
+          signCtx.strokeStyle = '#0f172a';
+        }
+      }
+      resizeCanvas();
+      setTimeout(resizeCanvas, 200);
+
+      function getPos(e) {
+        var rect = signCanvas.getBoundingClientRect();
+        var clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+        var clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function startDraw(e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        isDrawing = true;
+        var placeholder = document.getElementById('signCanvasPlaceholder');
+        if (placeholder) placeholder.style.display = 'none';
+        var pos = getPos(e);
+        signCtx.beginPath();
+        signCtx.moveTo(pos.x, pos.y);
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        var pos = getPos(e);
+        signCtx.lineTo(pos.x, pos.y);
+        signCtx.stroke();
+      }
+
+      function endDraw(e) {
+        if (e && e.cancelable) e.preventDefault();
+        if (e) e.stopPropagation();
+        isDrawing = false;
+      }
+
+      // 移除旧监听防止重复绑定
+      signCanvas.onmousedown = startDraw;
+      signCanvas.onmousemove = draw;
+      signCanvas.onmouseup = endDraw;
+      signCanvas.onmouseleave = endDraw;
+
+      signCanvas.addEventListener('touchstart', startDraw, { passive: false, capture: true });
+      signCanvas.addEventListener('touchmove', draw, { passive: false, capture: true });
+      signCanvas.addEventListener('touchend', endDraw, { passive: false, capture: true });
+      signCanvas.addEventListener('touchcancel', endDraw, { passive: false, capture: true });
+
+      // 阻止整个签名容器上的手势穿透与下拉刷新
+      var parentBox = signCanvas.parentElement;
+      if (parentBox) {
+        parentBox.addEventListener('touchstart', function(ev) { if (ev.cancelable) ev.preventDefault(); ev.stopPropagation(); }, { passive: false });
+        parentBox.addEventListener('touchmove', function(ev) { if (ev.cancelable) ev.preventDefault(); ev.stopPropagation(); }, { passive: false });
+      }
+    }
+
+    function clearSignature() {
+      if (!signCanvas || !signCtx) return;
+      signCtx.clearRect(0, 0, signCanvas.width, signCanvas.height);
+      var placeholder = document.getElementById('signCanvasPlaceholder');
+      if (placeholder) placeholder.style.display = 'block';
+    }
+
+    function isSignCanvasEmpty() {
+      if (!signCanvas || !signCtx) return true;
+      var w = signCanvas.width;
+      var h = signCanvas.height;
+      if (!w || !h) return true;
+      try {
+        var imgData = signCtx.getImageData(0, 0, w, h);
+        for (var i = 3; i < imgData.data.length; i += 4) {
+          if (imgData.data[i] > 0) return false;
+        }
+      } catch (e) {
+        return false;
+      }
+      return true;
+    }
+
+    function getSignatureBase64() {
+      if (!signCanvas || isSignCanvasEmpty()) return '';
+      return signCanvas.toDataURL('image/png');
+    }
+
+    // -------------------------------------------------------------
+    // 申请开通新高校逻辑
+    // -------------------------------------------------------------
+    async function openAdminSchoolAppsModal() {
+      document.getElementById('adminSchoolAppsModal').style.display = 'flex';
+      var container = document.getElementById('adminSchoolAppsListContainer');
+      container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">⏳ 正在读取高校开通申请...</div>';
+
+      try {
+        var res = await safeFetchJson('/api/admin/school-applications');
+        var apps = (res && res.applications) ? res.applications : [];
+        if (apps.length === 0) {
+          container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;">暂无学生提交的高校开通申请</div>';
+          return;
+        }
+
+        var html = '';
+        apps.forEach(function(a) {
+          var isPending = (a.status === 'pending');
+          html += '<div class="card" style="margin-bottom:10px; padding:12px; border:1px solid ' + (isPending ? '#f59e0b' : '#cbd5e1') + '; border-radius:8px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
+              '<strong style="font-size:14px; color:#0f172a;">🏫 ' + a.school_name + '</strong>' +
+              '<span class="badge ' + (isPending ? 'badge-pending' : 'badge-completed') + '">' + (isPending ? '待开通' : '已开通') + '</span>' +
+            '</div>' +
+            '<div style="font-size:12px; color:#64748b; line-height:1.5; margin-bottom:8px;">' +
+              '<div>📍 地区：' + (a.province || '') + ' ' + (a.city || '') + ' · 校区：' + (a.campuses || '主校区') + '</div>' +
+              '<div>👤 申请学生：' + a.user_email + ' · 申请时间：' + (a.created_at || '').substring(0, 16) + '</div>' +
+              (a.notes ? ('<div>💬 说明：' + a.notes + '</div>') : '') +
+            '</div>' +
+            (isPending ? (
+              '<div style="display:flex; justify-content:flex-end;">' +
+                '<button type="button" class="btn btn-sm btn-primary" onclick="approveSchoolApp(' + a.id + ', \'' + a.school_name.replace(/'/g, "\\'") + '\')">✅ 联系代办员并一键开通</button>' +
+              '</div>'
+            ) : '<div style="font-size:11px; color:#10b981; text-align:right;">已开通上线 · 业务已开放</div>') +
+          '</div>';
+        });
+
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger);">读取失败: ' + err.message + '</div>';
+      }
+    }
+
+    function closeAdminSchoolAppsModal() {
+      document.getElementById('adminSchoolAppsModal').style.display = 'none';
+    }
+
+    async function approveSchoolApp(appId, schoolName) {
+      if (!confirm('确认已与该校在校代办员对接完毕，正式开通【' + schoolName + '】吗？\n开通后学生即可选校发起代办并收到系统上线通知！')) return;
+
+      try {
+        var res = await safeFetchJson('/api/admin/school-applications/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ app_id: appId })
+        });
+
+        if (res && res.success) {
+          alert(res.message || '高校开通成功！');
+          openAdminSchoolAppsModal();
+          loadSchools();
+        } else {
+          alert(res ? res.error : '开通失败，请重试');
+        }
+      } catch (e) {
+        alert('开通出错: ' + e.message);
+      }
+    }
+    function openSchoolApplyModal() {
+      document.getElementById('mApplySchoolName').value = '';
+      document.getElementById('mApplyNotes').value = '';
+      document.getElementById('schoolApplyModal').style.display = 'flex';
+    }
+
+    function closeSchoolApplyModal() {
+      document.getElementById('schoolApplyModal').style.display = 'none';
+    }
+
+    async function submitSchoolApply() {
+      var name = document.getElementById('mApplySchoolName').value.trim();
+      var prov = document.getElementById('mApplyProvince').value.trim() || '湖北';
+      var city = document.getElementById('mApplyCity').value.trim() || '武汉';
+      var campuses = document.getElementById('mApplyCampuses').value.trim() || '主校区';
+      var notes = document.getElementById('mApplyNotes').value.trim();
+
+      if (!name) {
+        alert('请填写需要开通的高校全称！');
+        return;
+      }
+
+      try {
+        var res = await safeFetchJson('/api/schools/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ school_name: name, province: prov, city: city, campuses: campuses, notes: notes })
+        });
+
+        if (res && res.success) {
+          alert(res.message || '申请已提交！管理员核实后将为您开通。');
+          closeSchoolApplyModal();
+          if (res.already_opened) {
+            loadSchools();
+          }
+        } else {
+          alert(res ? res.error : '提交失败，请重试');
+        }
+      } catch (e) {
+        alert('提交出错: ' + e.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 2. 鉴权与页面切换
+    // -------------------------------------------------------------
+        var globalUnreadTimer = null;
+    var lastTotalUnread = 0;
+    var bannerTargetTaskId = null;
+    var bannerHideTimer = null;
+
+    function startGlobalUnreadPolling() {
+      if (globalUnreadTimer) clearInterval(globalUnreadTimer);
+      checkGlobalUnread();
+      globalUnreadTimer = setInterval(checkGlobalUnread, 4000);
+    }
+
+    var lastBroadcastId = parseInt(localStorage.getItem('xyb_last_broadcast_id') || '0');
+
+    async function checkGlobalUnread() {
+      // 1. 检查最新系统广播 (未登录也可接收全员系统推送)
+      try {
+        var bRes = await safeFetchJson('/api/system/announcements');
+        if (bRes && bRes.success && bRes.broadcasts && bRes.broadcasts.length > 0) {
+          var latestB = bRes.broadcasts[0];
+          if (latestB.id > lastBroadcastId) {
+            lastBroadcastId = latestB.id;
+            localStorage.setItem('xyb_last_broadcast_id', String(latestB.id));
+            showNotificationBanner(latestB.target_task_id || null, '📢 ' + latestB.title, latestB.content);
+          }
+        }
+      } catch (e) {}
+
+      if (!currentUser || !localStorage.getItem('xyb_token')) return;
+
+      // 2. 检查代办员/个人专属派单通知 (精准校区任务通知)
+      try {
+        var nRes = await safeFetchJson('/api/user/notifications');
+        if (nRes && nRes.success && nRes.notifications && nRes.notifications.length > 0) {
+          var unreadNotifs = nRes.notifications.filter(function(n) { return n.is_read === 0; });
+          var lastNotifId = parseInt(localStorage.getItem('xyb_last_notif_id') || '0');
+          if (unreadNotifs.length > 0) {
+            var newest = unreadNotifs[0];
+            if (newest.id > lastNotifId) {
+              localStorage.setItem('xyb_last_notif_id', String(newest.id));
+              // 调起 Android 系统原生通知栏与震动
+              showNotificationBanner(newest.target_task_id || null, newest.title, newest.content);
+            }
+          }
+        }
+      } catch (ne) {}
+
+      // 3. 检查订单私信未读数
+      try {
+        var res = await safeFetchJson('/api/im/unread-counts');
+        if (!res || !res.success) return;
+        var unreadList = res.unread || [];
+        var total = 0;
+        var latestTaskId = null;
+
+        unreadList.forEach(function(item) {
+          total += (item.unread_count || 0);
+          if (item.unread_count > 0 && !latestTaskId) latestTaskId = item.task_id;
+        });
+
+        var badge = document.getElementById('msgUnreadBadge');
+        if (badge) {
+          if (total > 0) {
+            badge.innerText = total > 99 ? '99+' : total;
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+
+        if (total > lastTotalUnread && (!activeChatTaskId || activeChatTaskId !== latestTaskId)) {
+          showNotificationBanner(latestTaskId, '收到校友代办新消息', '您有 ' + total + ' 条未读沟通消息，点击前往查看');
+        }
+        lastTotalUnread = total;
+      } catch (err) {}
+    }
+
+    function showNotificationBanner(taskId, title, content) {
+      bannerTargetTaskId = taskId;
+
+      // 1. 调用 Android 原生系统通知栏 (支持锁屏亮屏、顶部下拉通知、声音与硬件震动)
+      if (window.CampusHelperNative && typeof window.CampusHelperNative.postNotification === 'function') {
+        try {
+          window.CampusHelperNative.postNotification(title, content, taskId ? String(taskId) : '');
+        } catch (e) {
+          console.error('Call native notification error:', e);
+        }
+      }
+
+      // 2. 网页内部顶部浮动横幅
+      var b = document.getElementById('globalMsgBanner');
+      if (!b) return;
+      document.getElementById('globalBannerTitle').innerText = title;
+      document.getElementById('globalBannerText').innerText = content;
+      b.style.display = 'flex';
+
+      if (bannerHideTimer) clearTimeout(bannerHideTimer);
+      bannerHideTimer = setTimeout(function() {
+        b.style.display = 'none';
+      }, 5000);
+    }
+
+    function handleBannerClick() {
+      var b = document.getElementById('globalMsgBanner');
+      if (b) b.style.display = 'none';
+      if (bannerTargetTaskId) {
+        switchMainTab('messages', bannerTargetTaskId);
+      } else {
+        switchMainTab('messages');
+      }
+    }
+
+    async function checkAuthAndLoadUser() {
+      var token = localStorage.getItem('xyb_token');
+      if (!token) {
+        showGuestScreen();
+        return;
+      }
+      // 自动同步 Token 至 Android 原生后台守护进程
+      try {
+        if (window.CampusHelperNative && window.CampusHelperNative.syncAuthToken) {
+          window.CampusHelperNative.syncAuthToken(token);
+        }
+      } catch (ne) {}
+
+      // 读取上次持久化的工作角色
+      var savedRole = localStorage.getItem('xyb_active_role');
+      if (savedRole) currentRole = savedRole;
+
+      try {
+        var res = await safeFetchJson('/api/user/info');
+        if (res && (res.user || res.email)) {
+          currentUser = res.user || res;
+          // 严格校准：如果当前账号根本不是管理员，强制禁止激活 admin
+          var userEmail = ((currentUser && currentUser.email) || '').toLowerCase().trim();
+          var isSuper = ['xtayungnny@163.com', 'admin@whsunshine.link'].includes(userEmail);
+          var isActuallyAdmin = (currentUser.role === 'admin' || currentUser.is_admin || isSuper);
+          var isActuallyAgent = (currentUser.role === 'agent' || currentUser.is_agent || currentUser.is_agent_verified == 1 || isActuallyAdmin);
+
+          var candidateRole = savedRole || currentUser.active_role || currentUser.role || 'student';
+          if (candidateRole === 'admin' && !isActuallyAdmin) {
+            candidateRole = isActuallyAgent ? 'agent' : 'student';
+          }
+          if (candidateRole === 'agent' && !isActuallyAgent) {
+            candidateRole = 'student';
+          }
+
+          currentRole = candidateRole;
+          localStorage.setItem('xyb_active_role', currentRole);
+          showAppMainScreen();
+          updateUserUI();
+          loadCurrentRoleTasks();
+          startGlobalUnreadPolling();
+        } else {
+          localStorage.removeItem('xyb_token');
+      // 保留 xyb_active_role 偏好供下次登录默认选用
+          showGuestScreen();
+        }
+      } catch (err) {
+        showGuestScreen();
+      }
+    }
+
+    function showGuestScreen() {
+      currentUser = null;
+      document.getElementById('guestAuthContainer').style.display = 'flex';
+      document.getElementById('appMainContainer').style.display = 'none';
+      setAuthMode('login');
+    }
+
+    function showAppMainScreen() {
+      document.getElementById('guestAuthContainer').style.display = 'none';
+      document.getElementById('appMainContainer').style.display = 'block';
+    }
+
+    function updateUserUI() {
+      if (!currentUser) return;
+      var userEmail = (currentUser.email || '').toLowerCase().trim();
+      document.getElementById('profileUserEmail').innerText = currentUser.email || '校友用户';
+      var roleNames = { student: '学生校友', agent: '官方认证代办员', admin: '平台总管理员' };
+      var roleText = roleNames[currentRole] || '校友用户';
+      document.getElementById('profileUserRole').innerText = '当前角色: ' + roleText;
+      document.getElementById('topRoleBadge').innerText = roleText;
+
+      var realNameEl = document.getElementById('profileRealNameStatusText');
+      if (realNameEl) {
+        if (currentUser.real_name) {
+          realNameEl.innerHTML = '<span style="color:#16a34a; font-weight:700;">✅ 已实名 (' + currentUser.real_name + ') &gt;</span>';
+        } else {
+          realNameEl.innerHTML = '<span style="color:#e11d48; font-weight:700;">⚠️ 未实名 (去认证) &gt;</span>';
+        }
+      }
+
+      var adminPayItem = document.getElementById('adminPaymentConfigMenuItem');
+      var adminSchoolItem = document.getElementById('adminSchoolApproveMenuItem');
+      if (adminPayItem) {
+        // 严格仅在当前激活视角为 admin 时展示，学生与代办员视角彻底隐藏
+        var isSuperAccount = ['xtayungnny@163.com', 'admin@whsunshine.link'].includes(userEmail);
+        var isRealAdmin = (currentUser.role === 'admin' || currentUser.is_admin || isSuperAccount);
+        adminPayItem.style.display = (currentRole === 'admin' && isRealAdmin) ? 'flex' : 'none';
+      }
+      if (adminSchoolItem) {
+        var isSuperAccount = ['xtayungnny@163.com', 'admin@whsunshine.link'].includes(userEmail);
+        var isRealAdmin = (currentUser.role === 'admin' || currentUser.is_admin || isSuperAccount);
+        adminSchoolItem.style.display = (currentRole === 'admin' && isRealAdmin) ? 'flex' : 'none';
+      }
+
+      var btnCreate = document.getElementById('btnCreateTaskTop');
+      if (currentRole === 'agent') {
+        btnCreate.style.display = 'none';
+        document.getElementById('tasksSectionTitle').innerText = '⚡ 抢单大厅与承接';
+      } else if (currentRole === 'admin') {
+        btnCreate.style.display = 'none';
+        document.getElementById('tasksSectionTitle').innerText = '🛡️ 全站订单调度';
+      } else {
+        btnCreate.style.display = 'inline-flex';
+        document.getElementById('tasksSectionTitle').innerText = '📋 办理订单';
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 3. 登录 / 注册 / 找回密码
+    // -------------------------------------------------------------
+    function setAuthMode(mode) {
+      currentAuthMode = mode;
+      var isLogin = mode === 'login';
+      var isReg = mode === 'register';
+      var isForgot = mode === 'forgot';
+
+      document.getElementById('btnTabLogin').classList.toggle('active', isLogin);
+      document.getElementById('btnTabReg').classList.toggle('active', isReg);
+      document.getElementById('btnTabForgot').classList.toggle('active', isForgot);
+
+      document.getElementById('grpAuthCode').style.display = isLogin ? 'none' : 'block';
+      document.getElementById('btnAuthSubmit').innerText = isLogin ? '🚀 登 录' : (isReg ? '✨ 立即注册' : '🔒 重置密码');
+    }
+
+    async function handleSendCodeClick() {
+      var email = document.getElementById('inpAuthEmail').value.trim();
+      if (!email || !email.includes('@')) {
+        alert('请输入有效的电子邮箱地址！');
+        return;
+      }
+      var btn = document.getElementById('btnGetAuthCode');
+      btn.disabled = true;
+      btn.innerText = '发送中...';
+
+      try {
+        var type = currentAuthMode === 'register' ? 'register' : 'reset_password';
+        var res = await safeFetchJson('/api/auth/send-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, type: type })
+        });
+        if (res && res.success) {
+          alert('🎉 验证码已发送至您的邮箱，请注意查收！');
+          var left = 60;
+          var timer = setInterval(function() {
+            left--;
+            btn.innerText = left + 's重新获取';
+            if (left <= 0) {
+              clearInterval(timer);
+              btn.disabled = false;
+              btn.innerText = '获取验证码';
+            }
+          }, 1000);
+        } else {
+          alert('发送失败: ' + (res.error || '未知错误'));
+          btn.disabled = false;
+          btn.innerText = '获取验证码';
+        }
+      } catch (err) {
+        alert('网络异常: ' + err.message);
+        btn.disabled = false;
+        btn.innerText = '获取验证码';
+      }
+    }
+
+    async function handleAuthSubmitClick() {
+      var email = document.getElementById('inpAuthEmail').value.trim();
+      var pwd = document.getElementById('inpAuthPassword').value.trim();
+      var code = document.getElementById('inpAuthCode').value.trim();
+
+      if (!email || !pwd) {
+        alert('请填写邮箱和密码！');
+        return;
+      }
+
+      if (currentAuthMode !== 'login' && !code) {
+        alert('请输入邮箱验证码！');
+        return;
+      }
+
+      var endpoint = '/api/auth/login';
+      var payload = { email: email, password: pwd };
+
+      if (currentAuthMode === 'register') {
+        endpoint = '/api/auth/register';
+        payload.code = code;
+      } else if (currentAuthMode === 'forgot') {
+        endpoint = '/api/auth/reset-password';
+        payload.code = code;
+        payload.new_password = pwd;
+      }
+
+      try {
+        var res = await safeFetchJson(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res && (res.token || res.success)) {
+          if (res.token) {
+            localStorage.setItem('xyb_token', res.token);
+          }
+          alert('🎉 操作成功，欢迎进入校友帮！');
+          checkAuthAndLoadUser();
+        } else {
+          alert('失败: ' + (res.error || '账号或密码错误'));
+        }
+      } catch (err) {
+        alert('提交异常: ' + err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 4. 公共高校库与联动
+    // -------------------------------------------------------------
+    async function loadPublicSchools() {
+      try {
+        var res = await safeFetchJson('/api/schools');
+        availableSchools = (res && res.schools) ? res.schools : [];
+        populateSchoolSelects();
+      } catch (e) {
+        console.error('Failed to load schools', e);
+      }
+    }
+
+    function populateSchoolSelects() {
+      var selects = ['taskSchoolSelect', 'eduSchoolSelect', 'agentSchoolSelect'];
+      selects.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var html = '<option value="">-- 请选择高校 --</option>';
+        availableSchools.forEach(function(s) {
+          html += '<option value="' + s.name + '" data-campuses="' + (s.campuses || '主校区') + '">' + s.name + ' (' + (s.province || '') + ')</option>';
+        });
+        el.innerHTML = html;
+      });
+    }
+
+    function handleTaskSchoolChange(schoolName) { updateCampusSelect('taskCampusSelect', schoolName); }
+    function handleEduSchoolChange(schoolName) { updateCampusSelect('eduCampusSelect', schoolName); }
+    function handleAgentSchoolChange(schoolName) { updateCampusSelect('agentCampusSelect', schoolName); }
+
+    function updateCampusSelect(campusSelectId, schoolName) {
+      var el = document.getElementById(campusSelectId);
+      if (!el) return;
+      var school = availableSchools.find(function(s) { return s.name === schoolName; });
+      var campuses = ['主校区'];
+      if (school && school.campuses) {
+        campuses = school.campuses.split(/[,，、 ]+/).filter(Boolean);
+      }
+      var html = '';
+      campuses.forEach(function(c) {
+        html += '<option value="' + c + '">' + c + '</option>';
+      });
+      el.innerHTML = html;
+    }
+
+    function handleTaskServiceChange(val) {
+      var customInput = document.getElementById('taskCustomService');
+      if (val === '其他教务档案事项') {
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+      }
+      generateStandardMaterialsList(val);
+    }
+
+    function generateStandardMaterialsList(serviceTitle) {
+      var defaultList = [
+        { name: '校友学籍档案代办委托书 (在线手签)', isDoc: true, required: true, status: 'signed', desc: '法律授权凭据，无需传图，下方亲笔手写签名即可自动合成' },
+        { name: '校友学籍档案业务办理申请表 (在线手签)', isDoc: true, required: true, status: 'signed', desc: '教务处/档案馆窗口登记表，无需传图，直接手签生效' },
+        { name: '委托人身份证正反面照片', isDoc: false, required: true, status: 'pending', file_url: null },
+        { name: '学信网在线验证报告 / 学生证', isDoc: false, required: true, status: 'pending', file_url: null }
+      ];
+      if (serviceTitle && serviceTitle.includes('成绩单')) {
+        defaultList.push({ name: '本人电子一寸登记照片', isDoc: false, required: false, status: 'pending', file_url: null });
+      } else if (serviceTitle && serviceTitle.includes('证明书')) {
+        defaultList.push({ name: '毕业证书遗失证明/登报申明', isDoc: false, required: false, status: 'pending', file_url: null });
+      }
+      currentTaskMaterials = defaultList;
+      renderTaskMaterialsRows();
+    }
+
+    function renderTaskMaterialsRows() {
+      var c = document.getElementById('taskMaterialRowsContainer');
+      if (!c) return;
+      var html = '';
+      (currentTaskMaterials || []).forEach(function(m, idx) {
+        var isFormDoc = (m.name.indexOf('委托书') !== -1 || m.name.indexOf('申请表') !== -1 || m.isDoc);
+        var isUploaded = !!m.file_url;
+
+        html += '<div class="material-row-item" style="display:flex; flex-direction:column; gap:6px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 10px; margin-bottom:6px;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+            '<div style="font-weight:700; font-size:12px; color:#0f172a;">' +
+              (idx + 1) + '. ' + m.name + (m.required ? ' <span style="color:var(--danger); font-weight:bold;">*必需</span>' : ' <span style="color:#94a3b8; font-weight:normal;">(可选)</span>') +
+            '</div>' +
+            (isFormDoc ? '<span style="font-size:11px; color:#0284c7; background:#e0f2fe; padding:2px 6px; border-radius:4px; font-weight:600;">🔒 系统法定单据 (免传图)</span>' : '<button type="button" onclick="handleDeleteTaskMaterial(' + idx + ')" style="background:none; border:none; color:var(--danger); font-size:11px; cursor:pointer; font-weight:bold;">🗑️ 删除</button>') +
+          '</div>';
+
+        if (isFormDoc) {
+          html += '<div style="font-size:11px; color:#059669; display:flex; align-items:center; justify-content:space-between;">' +
+            '<span>✍️ ' + (m.desc || '窗口法定单据，只需在下方完成手写签名即可') + '</span>' +
+            '<span class="badge" style="background:#dcfce7; color:#15803d; font-size:10px;">关联下方签名</span>' +
+          '</div>';
+        } else {
+          html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">' +
+            '<span style="font-size:11px; color:' + (isUploaded ? 'var(--success)' : '#94a3b8') + ';">' + (isUploaded ? '✅ 已拍摄材料原件' : '⏳ 待拍照或从相册上传') + '</span>' +
+            '<div style="display:flex; align-items:center; gap:6px;">' +
+              (isUploaded ? ('<img src="' + m.file_url + '" class="material-row-preview" style="width:28px; height:28px; border-radius:4px; object-fit:cover; border:1px solid #cbd5e1;">') : '') +
+              '<label class="btn btn-sm btn-outline" style="cursor:pointer; font-size:11px; padding:3px 8px;">' +
+                '📷 ' + (isUploaded ? '重新拍摄' : '拍照上传') +
+                '<input type="file" accept="image/*" style="display:none;" onchange="handleMaterialItemUpload(event, ' + idx + ')">' +
+              '</label>' +
+            '</div>' +
+          '</div>';
+        }
+
+        html += '</div>';
+      });
+
+      html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">' +
+        '<button type="button" class="btn btn-sm btn-outline" style="font-size:11px;" onclick="handleAddCustomTaskMaterial()">➕ 补充其他证明材料</button>' +
+        '<span style="font-size:11px; color:#94a3b8;">如某项证明不需要可点击「删除」</span>' +
+      '</div>';
+
+      c.innerHTML = html;
+    }
+
+    function handleDeleteTaskMaterial(idx) {
+      var item = currentTaskMaterials[idx];
+      if (item.name.indexOf('委托书') !== -1 || item.name.indexOf('申请表') !== -1) {
+        alert('【' + item.name + '】为高校窗口代办必须的法定凭据，不可删除！');
+        return;
+      }
+      if (confirm('确认从办理清单中移除【' + item.name + '】吗？')) {
+        currentTaskMaterials.splice(idx, 1);
+        renderTaskMaterialsRows();
+      }
+    }
+
+    function handleAddCustomTaskMaterial() {
+      var name = prompt('请输入需要补充的材料名称（例如：毕业证复印件 / 录取花名册复印件）：');
+      if (!name || !name.trim()) return;
+      currentTaskMaterials.push({
+        name: name.trim(),
+        isDoc: false,
+        required: true,
+        status: 'pending',
+        file_url: null
+      });
+      renderTaskMaterialsRows();
+    }
+
+    function handleMaterialItemUpload(event, idx) {
+      var file = event.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        currentTaskMaterials[idx].file_url = e.target.result;
+        currentTaskMaterials[idx].status = 'uploaded';
+        renderTaskMaterialsRows();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // -------------------------------------------------------------
+    // 5. 订单列表与代办员接单
+    // -------------------------------------------------------------
+    async function loadCurrentRoleTasks() {
+      var container = document.getElementById('taskListContainer');
+      if (!container) return;
+      container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-sub);">⏳ 加载订单列表中...</div>';
+
+      try {
+        var qrRes = await safeFetchJson('/api/platform/payment-qrcode');
+        if (qrRes && qrRes.success) window._cachedGlobalPlatformQR = qrRes;
+      } catch (e) {}
+
+      try {
+        var endpoint = '/api/tasks/my';
+        if (currentRole === 'agent') {
+          endpoint = '/api/tasks?type=agent_market';
+        } else if (currentRole === 'admin') {
+          endpoint = '/api/admin/tasks?status=all';
+        }
+
+        var res = await safeFetchJson(endpoint);
+        taskListCache = (res && (res.tasks || res.data)) ? (res.tasks || res.data) : [];
+        renderTaskList();
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--danger);">加载失败: ' + err.message + '</div>';
+      }
+    }
+
+    function renderTaskList() {
+      var container = document.getElementById('taskListContainer');
+      var tasks = taskListCache;
+
+      if (currentTaskFilter !== 'all') {
+        tasks = tasks.filter(function(t) { return t.status === currentTaskFilter; });
+      }
+
+      if (!tasks || tasks.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;">暂无相关订单记录</div>';
+        return;
+      }
+
+      var html = '';
+      tasks.forEach(function(t) {
+        var statusMap = {
+          pending_agent: { text: '待接单', cls: 'badge-pending' },
+          pending: { text: '待接单', cls: 'badge-pending' },
+          accepted: { text: '办理中', cls: 'badge-accepted' },
+          completed: { text: '已办结', cls: 'badge-completed' },
+          cancelled: { text: '已取消', cls: 'badge-cancelled' }
+        };
+        var st = statusMap[t.status] || { text: t.status, cls: 'badge-pending' };
+
+        var actionBtns = '';
+        if (currentRole === 'agent' && (t.status === 'pending_agent' || t.status === 'pending')) {
+          actionBtns += '<button class="btn btn-sm btn-success" onclick="handleAgentTakeTask(' + t.id + ', \'' + (t.task_no || '') + '\')">⚡ 立即抢单接单</button>';
+        }
+        if (currentRole === 'student' && (t.status === 'pending_agent' || t.status === 'pending')) {
+          actionBtns += '<button class="btn btn-sm btn-outline" onclick="openEditTaskModal(' + t.id + ')">✏️ 修改需求</button>';
+        }
+        if (t.status === 'accepted') {
+          actionBtns += '<button class="btn btn-sm btn-warning" onclick="switchMainTab(\'messages\', ' + t.id + ')">💬 沟通室</button>';
+        }
+
+        var payStatusHtml = '';
+        if (t.service_fee > 0) {
+          var isPaid = t.payment_status === 'paid';
+          payStatusHtml += '<div>💰 <strong>服务报酬：</strong><span style="color:var(--danger); font-weight:700;">￥' + (t.service_fee || 100) + '</span> ' +
+            (isPaid ? '<span class="badge" style="background:#dcfce7; color:#15803d; margin-left:4px;">已支付</span>' : '<span class="badge" style="background:#fee2e2; color:#b91c1c; margin-left:4px;">待付款</span>') +
+            ' | 运费: ￥' + (t.postage_fee || 23) + '</div>';
+        }
+
+        // 严格遵循后台配置的支付方式与开关
+        var mobilePayBtns = '';
+        if (currentRole === 'student' && t.payment_status !== 'paid' && t.status !== 'cancelled') {
+          // 1. 在线聚合支付 (后台开启 enable_online 时才展示)
+          if (window._cachedGlobalPlatformQR && window._cachedGlobalPlatformQR.enable_online) {
+            mobilePayBtns += '<button class="btn btn-sm" style="background:#0284c7; color:#fff; font-weight:600;" onclick="triggerMobileOnlinePay(' + t.id + ', \'service\', \'alipay\')">🔵 支付宝在线付 ￥' + (t.service_fee || 100) + '</button>' +
+              '<button class="btn btn-sm" style="background:#059669; color:#fff; font-weight:600;" onclick="triggerMobileOnlinePay(' + t.id + ', \'service\', \'wxpay\')">🟢 微信在线付 ￥' + (t.service_fee || 100) + '</button>';
+          }
+          // 2. 个人码转账凭证上传 (后台开启 enable_personal 时展示，默认开启)
+          if (!window._cachedGlobalPlatformQR || window._cachedGlobalPlatformQR.enable_personal !== false) {
+            mobilePayBtns += '<button class="btn btn-sm btn-outline" style="color:#2563eb; border-color:#93c5fd; font-weight:600;" onclick="openMobilePersonalPayModal(' + t.id + ', ' + (t.service_fee || 100) + ')">📱 扫码转账 / 上传凭证</button>';
+          }
+        }
+
+        // 凭证查看区
+        if (t.payment_proof_img) {
+          payStatusHtml += '<div style="font-size:12px; margin-top:4px;"><a href="javascript:void(0)" onclick="previewSingleImage(\'' + t.payment_proof_img + '\', \'代办费支付凭证\')" style="color:#2563eb; text-decoration:underline;">🔍 查看已上传的代办费转账截图</a></div>';
+        }
+
+        // 3. 代办员接单后的精细化操作栏 (仅代办员在办理中状态可见)
+        var agentManageBar = '';
+        if (currentRole === 'agent' && t.status === 'accepted') {
+          var pFee = Math.max(10.0, (t.service_fee || 100) * 0.50);
+          var aFee = Math.max(0.0, (t.service_fee || 100) - pFee);
+          agentManageBar = '<div style="margin-top:10px; padding:10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px;">' +
+            '<div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:6px;">⚙️ 代办员现场办理与费用维护：</div>' +
+            '<div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px;">' +
+              '<div style="display:flex; align-items:center; gap:4px;">' +
+                '<span style="font-size:12px; font-weight:600;">代办费￥:</span>' +
+                '<input type="number" id="mAgentFeeInput_' + t.id + '" class="form-control" style="width:75px; height:30px; font-size:12px; padding:2px 4px; font-weight:700; color:#ea580c;" value="' + (t.service_fee || 100) + '">' +
+              '</div>' +
+              '<div style="display:flex; align-items:center; gap:4px;">' +
+                '<span style="font-size:12px; font-weight:600; color:#dc2626;">工本费￥:</span>' +
+                '<input type="number" id="mAgentCostInput_' + t.id + '" class="form-control" style="width:75px; height:30px; font-size:12px; padding:2px 4px; font-weight:700; color:#dc2626;" placeholder="0" value="' + (t.cost_fee || 0) + '">' +
+              '</div>' +
+              '<button type="button" class="btn btn-sm btn-primary" style="padding:4px 8px; font-size:12px;" onclick="handleMobileSaveBothFees(' + t.id + ')">💾 保存费用</button>' +
+            '</div>' +
+            '<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">' +
+              '<button type="button" class="btn btn-sm" style="background:#2563eb; color:#fff; font-size:12px;" onclick="handleMobileGenerateFullDocPDF(' + t.id + ')">📄 查看/合成PDF</button>' +
+              '<button type="button" class="btn btn-sm btn-outline" style="color:#b91c1c; border-color:#fca5a5; font-size:12px;" onclick="handleMobileRequestCancel(' + t.id + ')">🚫 协商取消</button>' +
+            '</div>' +
+          '</div>';
+        }
+
+        // 取消订单通知条 (如果存在取消申请)
+        var cancelNoticeHtml = '';
+        if (t.status !== 'completed' && t.status !== 'cancelled') {
+          if (t.cancel_requested_by) {
+            var reqRoleText = t.cancel_requested_by === 'agent' ? '代办员' : '委托学生';
+            var isMyReq = (currentRole === 'agent' && t.cancel_requested_by === 'agent') || (currentRole === 'student' && t.cancel_requested_by === 'student');
+            if (isMyReq) {
+              cancelNoticeHtml = '<div style="margin-top:6px; font-size:12px; color:#b45309; background:#fffbeb; padding:6px 8px; border-radius:6px; border:1px solid #fde68a;">⏳ 您已申请取消订单 (' + (t.cancel_reason || '双方协商') + ')，等待对方确认...</div>';
+            } else {
+              cancelNoticeHtml = '<div style="margin-top:6px; font-size:12px; color:#b91c1c; background:#fef2f2; padding:6px 8px; border-radius:6px; border:1px solid #fecaca; display:flex; justify-content:space-between; align-items:center;">' +
+                '<span>⚠️ ' + reqRoleText + '申请取消: ' + (t.cancel_reason || '双方协商') + '</span>' +
+                '<div style="display:flex; gap:4px;">' +
+                  '<button class="btn btn-sm btn-success" style="padding:2px 6px; font-size:11px;" onclick="handleMobileRespondCancel(' + t.id + ', \'agree\')">同意取消</button>' +
+                  '<button class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:11px;" onclick="handleMobileRespondCancel(' + t.id + ', \'reject\')">拒绝</button>' +
+                '</div>' +
+              '</div>';
+            }
+          }
+        }
+
+        html += '<div class="order-card">' +
+          '<div class="order-header">' +
+            '<span class="order-title">📋 ' + (t.service_title || '学籍代办事项') + '</span>' +
+            '<span class="badge ' + st.cls + '">' + st.text + '</span>' +
+          '</div>' +
+          '<div class="order-meta">' +
+            '<div>🏫 <strong>高校校区：</strong>' + (t.school_name || '高校') + ' (' + (t.branch_school || '主校区') + ')</div>' +
+            payStatusHtml +
+            cancelNoticeHtml +
+            '<div>🆔 <strong>订单单号：</strong>' + (t.task_no || ('#' + t.id)) + '</div>' +
+            (t.service_description ? ('<div>📝 <strong>办理要求：</strong>' + t.service_description + '</div>') : '') +
+            agentManageBar +
+          '</div>' +
+          '<div class="order-actions">' + actionBtns + mobilePayBtns + '</div>' +
+        '</div>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function triggerMobileOnlinePay(taskId, feeType, payType) {
+      try {
+        var res = await safeFetchJson('/api/payment/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({ taskId: taskId, feeType: feeType, payType: payType })
+        });
+        if (res && res.success && res.pay_url) {
+          window.location.href = res.pay_url;
+        } else {
+          alert('调起在线支付失败: ' + (res ? (res.error || '网关未开启') : '未知错误'));
+        }
+      } catch (err) {
+        alert('支付发起异常: ' + err.message);
+      }
+    }
+
+    function switchTaskFilter(filter) {
+      currentTaskFilter = filter;
+      var btns = document.querySelectorAll('#taskSubTabs .sub-tab-btn');
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      event.target.classList.add('active');
+      renderTaskList();
+    }
+
+    async function handleAgentTakeTask(taskId, taskNo) {
+      if (!confirm('确认承接订单【' + (taskNo || ('#' + taskId)) + '】吗？\n接单后请及时与校友联系并在规定时间内前往窗口办理！')) return;
+
+      try {
+        var res = await safeFetchJson('/api/tasks/accept', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({ taskId: taskId, task_id: taskId, id: taskId })
+        });
+        if (res && res.success) {
+          alert('🎉 ' + (res.message || '接单成功！'));
+          loadCurrentRoleTasks();
+          startGlobalUnreadPolling();
+        } else {
+          alert('接单失败: ' + (res.error || '未知错误'));
+        }
+      } catch (err) {
+        alert('网络异常: ' + err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 6. 发起 / 修改代办需求
+    // -------------------------------------------------------------
+    async 
+    function renderSignDocPreviewHtml() {
+      var school = document.getElementById("taskSchoolSelect").value || "指定高校";
+      var campus = document.getElementById("taskCampusSelect").value || "主校区";
+      var title = document.getElementById("taskServiceSelect").value || document.getElementById("taskCustomServiceInput").value || "学籍档案业务办理";
+      var desc = document.getElementById("taskDescInput").value || "根据高校教务处及档案馆规定办理相关业务。";
+      var studentName = (currentUser && currentUser.profile && currentUser.profile.real_name) ? currentUser.profile.real_name : "委托人校友";
+      var studentPhone = (currentUser && currentUser.profile && currentUser.profile.phone) ? currentUser.profile.phone : "-";
+      var studentAddr = (currentUser && currentUser.profile && currentUser.profile.address) ? currentUser.profile.address : "-";
+      var today = new Date().toLocaleDateString("zh-CN");
+
+      return "<div style=\"text-align:center; border-bottom:2px solid #1e293b; padding-bottom:8px; margin-bottom:10px;\">" +
+        "<h3 style=\"margin:0 0 4px 0; font-size:15px; color:#1e293b;\">" + school + " 校友业务代办委托书与办理申请表</h3>" +
+        "<div style=\"font-size:11px; color:#64748b;\">高校学籍档案 · 校园在校生实名代办互助存证单据</div>" +
+      "</div>" +
+      "<div style=\"background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; margin-bottom:8px;\">" +
+        "<div><strong>委托人姓名：</strong>" + studentName + " | <strong>联系电话：</strong>" + studentPhone + "</div>" +
+        "<div><strong>学籍高校：</strong>" + school + " (" + campus + ")</div>" +
+        "<div><strong>委托办理事项：</strong><span style=\"color:#2563eb; font-weight:700;\">" + title + "</span></div>" +
+        "<div><strong>收件地址：</strong>" + studentAddr + "</div>" +
+        "<div><strong>办理要求：</strong>" + desc + "</div>" +
+      "</div>" +
+      "<div style=\"font-size:11px; color:#475569; line-height:1.5;\">" +
+        "<strong>委托声明：</strong>本人因毕业离校/异地工作原因，特委托【校友帮】校园认证代办员前往贵校教务处、档案馆及相关职能部门代为办理上述学籍档案业务，代为递交材料及签收寄送文件。" +
+      "</div>" +
+      "<div style=\"text-align:right; margin-top:10px; font-size:11px; color:#64748b;\">" +
+        "<div>委托日期：" + today + "</div>" +
+      "</div>";
+    }
+
+    
+    // -------------------------------------------------------------
+    // 原生 App 下拉刷新精准控制 (防止签名/弹窗滑动时误触发下拉更新)
+    // -------------------------------------------------------------
+    function setAppSwipeRefresh(enabled) {
+      try {
+        if (window.CampusHelperNative && typeof window.CampusHelperNative.setSwipeRefreshEnabled === "function") {
+          window.CampusHelperNative.setSwipeRefreshEnabled(!!enabled);
+        }
+      } catch (e) {}
+    }
+
+function openSignDocModal() {
+      var school = document.getElementById("taskSchoolSelect").value;
+      var title = document.getElementById("taskServiceSelect").value || document.getElementById("taskCustomServiceInput").value;
+      if (!school || !title) {
+        alert("请先选择办理高校与代办事项，以便生成对应的委托公文！");
+        return;
+      }
+      setAppSwipeRefresh(false); // 🚨 彻底禁用 App 原生下拉刷新
+      document.getElementById("signDocPreviewContent").innerHTML = renderSignDocPreviewHtml();
+      document.getElementById("signDocModal").style.display = "flex";
+      setTimeout(function() {
+        initSignCanvas();
+      }, 150);
+    }
+
+    function closeSignDocModal() {
+      document.getElementById("signDocModal").style.display = "none";
+      setAppSwipeRefresh(true); // 恢复下拉刷新
+      updateTaskSignPreviewStatus();
+    }
+
+    function confirmSignDocModal() {
+      var data = getSignatureBase64();
+      if (!data) {
+        alert("请在底部手写板上书写您的真实姓名签名后再确认！");
+        return;
+      }
+      closeSignDocModal();
+      alert("🎉 电子签名已成功合成至委托书与申请表！");
+    }
+
+    function updateTaskSignPreviewStatus() {
+      var data = getSignatureBase64();
+      var preview = document.getElementById("taskSignatureThumbPreview");
+      var statusText = document.getElementById("taskSignatureStatusText");
+      if (data && preview && statusText) {
+        preview.src = data;
+        preview.style.display = "inline-block";
+        statusText.innerHTML = "<span style=\"color:#16a34a; font-weight:700;\">✅ 委托书/申请表已签署</span>";
+      }
+    }
+
+    async function openCreateTaskModal() {
+      setAppSwipeRefresh(false);
+      if (!currentUser) return;
+      document.getElementById('taskModalTitle').innerText = '➕ 发起学籍档案代办';
+      document.getElementById('taskEditId').value = '';
+      document.getElementById('taskFeeInput').value = '100';
+      document.getElementById('taskPostFeeInput').value = '23';
+      document.getElementById('taskDescInput').value = '';
+      document.getElementById('taskServiceSelect').value = '';
+      document.getElementById('taskCustomService').style.display = 'none';
+      generateStandardMaterialsList('补办毕业证明书/学位证明书');
+      clearSignature();
+      await loadQuickEducations();
+      document.getElementById('taskModal').style.display = 'flex';
+      setTimeout(initSignCanvas, 200);
+    }
+
+    function openEditTaskModal(taskId) {
+      var task = taskListCache.find(function(t) { return t.id === taskId; });
+      if (!task) return;
+      document.getElementById('taskModalTitle').innerText = '✏️ 修改代办需求 - ' + (task.task_no || ('#' + task.id));
+      document.getElementById('taskEditId').value = task.id;
+      document.getElementById('taskFeeInput').value = task.service_fee || 100;
+      document.getElementById('taskPostFeeInput').value = task.postage_fee || 23;
+      document.getElementById('taskDescInput').value = task.service_description || '';
+      document.getElementById('taskSchoolSelect').value = task.school_name || '';
+      handleTaskSchoolChange(task.school_name);
+      document.getElementById('taskCampusSelect').value = task.branch_school || '主校区';
+
+      var sel = document.getElementById('taskServiceSelect');
+      sel.value = task.service_title || '';
+      if (!sel.value) {
+        sel.value = '其他教务档案事项';
+        document.getElementById('taskCustomService').style.display = 'block';
+        document.getElementById('taskCustomService').value = task.service_title || '';
+      } else {
+        document.getElementById('taskCustomService').style.display = 'none';
+      }
+
+      generateStandardMaterialsList(task.service_title);
+      document.getElementById('taskModal').style.display = 'flex';
+      setTimeout(initSignCanvas, 200);
+    }
+
+    function closeTaskModal() {
+      setAppSwipeRefresh(true);
+      document.getElementById('taskModal').style.display = 'none';
+    }
+
+    async function loadQuickEducations() {
+      var sel = document.getElementById('taskQuickEduSelect');
+      try {
+        var res = await safeFetchJson('/api/educations');
+        var list = (res && res.educations) ? res.educations : (Array.isArray(res) ? res : []);
+        var html = '<option value="">-- 选择已录入的学籍自动填充高校与校区 --</option>';
+        list.forEach(function(e) {
+          html += '<option value="' + e.id + '" data-school="' + e.school_name + '" data-campus="' + (e.campus || '主校区') + '" data-major="' + (e.major || '') + '" data-studentno="' + (e.student_no || '') + '">' + e.school_name + ' · ' + (e.edu_level || '') + ' (' + (e.major || '') + ')</option>';
+        });
+        sel.innerHTML = html;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function applyQuickEduToTask() {
+      var sel = document.getElementById('taskQuickEduSelect');
+      var opt = sel.options[sel.selectedIndex];
+      if (!opt || !opt.value) return;
+      var school = opt.getAttribute('data-school');
+      var campus = opt.getAttribute('data-campus');
+      var major = opt.getAttribute('data-major');
+      var sno = opt.getAttribute('data-studentno');
+
+      if (school) {
+        document.getElementById('taskSchoolSelect').value = school;
+        handleTaskSchoolChange(school);
+        document.getElementById('taskCampusSelect').value = campus || '主校区';
+      }
+      if (major || sno) {
+        var desc = document.getElementById('taskDescInput');
+        desc.value = '专业: ' + (major || '-') + ' | 学号: ' + (sno || '-') + '\n' + desc.value;
+      }
+    }
+
+    async function submitSaveTask() {
+      var editId = document.getElementById('taskEditId').value;
+      var schoolName = document.getElementById('taskSchoolSelect').value;
+      var campus = document.getElementById('taskCampusSelect').value;
+      var serviceTitle = document.getElementById('taskServiceSelect').value;
+      if (serviceTitle === '其他教务档案事项') {
+        serviceTitle = document.getElementById('taskCustomService').value.trim();
+      }
+      var fee = parseFloat(document.getElementById('taskFeeInput').value) || 100;
+      var postFee = parseFloat(document.getElementById('taskPostFeeInput').value) || 23;
+      var desc = document.getElementById('taskDescInput').value.trim();
+      var signature = getSignatureBase64();
+
+      if (!schoolName || !serviceTitle) {
+        alert('请完整选择办理高校与具体代办事项！');
+        return;
+      }
+
+      var payload = {
+        task_id: editId || undefined,
+        taskId: editId || undefined,
+        id: editId || undefined,
+        school_name: schoolName,
+        branch_school: campus,
+        service_title: serviceTitle,
+        service_fee: fee,
+        postage_fee: postFee,
+        service_description: desc,
+        materials: currentTaskMaterials,
+        signature: signature
+      };
+
+      try {
+        var endpoint = editId ? '/api/tasks/update' : '/api/tasks/create';
+
+        var res = await safeFetchJson(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res && res.success) {
+          alert('🎉 ' + (res.message || '代办需求已成功保存！'));
+          closeTaskModal();
+          loadCurrentRoleTasks();
+          startGlobalUnreadPolling();
+        } else {
+          alert('保存失败: ' + (res.error || '未知错误'));
+        }
+      } catch (err) {
+        alert('网络异常: ' + err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 代办员费用调整与双向协商取消、PDF合成
+    // -------------------------------------------------------------
+    async function handleMobileSaveBothFees(taskId) {
+      var feeEl = document.getElementById('mAgentFeeInput_' + taskId);
+      var costEl = document.getElementById('mAgentCostInput_' + taskId);
+      var sFee = feeEl ? parseFloat(feeEl.value) : 100;
+      var cFee = costEl ? parseFloat(costEl.value) : 0;
+
+      if (isNaN(sFee) || sFee <= 0) return alert('请输入有效的代办报酬金额');
+      if (isNaN(cFee) || cFee < 0) return alert('请输入有效的工本费金额');
+
+      try {
+        var res = await safeFetchJson('/api/tasks/update-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({
+            taskId: taskId,
+            service_fee: sFee,
+            cost_fee: cFee
+          })
+        });
+
+        if (res && res.success) {
+          alert('🎉 费用已成功调整并实时同步至全端！');
+          loadCurrentRoleTasks();
+        } else {
+          alert('调整费用失败: ' + (res.error || '未知错误'));
+        }
+      } catch (e) {
+        alert('网络异常: ' + e.message);
+      }
+    }
+
+    async function handleMobileRequestCancel(taskId) {
+      var reason = prompt('代办员申请取消订单：\n请与学生充分沟通后填写取消原因（例如：学校教务处寒暑假封楼无法办理 / 双方协商一致取消）：', '协商一致取消办理');
+      if (!reason || !reason.trim()) return;
+
+      try {
+        var res = await safeFetchJson('/api/tasks/request-cancel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({ taskId: taskId, reason: reason.trim() })
+        });
+        if (res && res.success) {
+          alert('🎉 ' + (res.message || '取消申请已提交，等待对方确认！'));
+          loadCurrentRoleTasks();
+        } else {
+          alert('申请失败: ' + (res.error || '未知错误'));
+        }
+      } catch (e) {
+        alert('网络异常: ' + e.message);
+      }
+    }
+
+    async function handleMobileRespondCancel(taskId, action) {
+      var actText = action === 'agree' ? '同意取消订单' : '拒绝取消订单';
+      if (!confirm('确认【' + actText + '】吗？')) return;
+
+      try {
+        var res = await safeFetchJson('/api/tasks/respond-cancel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({ taskId: taskId, action: action })
+        });
+        if (res && res.success) {
+          alert('🎉 ' + (res.message || '操作成功！'));
+          loadCurrentRoleTasks();
+        } else {
+          alert('操作失败: ' + (res.error || '未知错误'));
+        }
+      } catch (e) {
+        alert('网络异常: ' + e.message);
+      }
+    }
+
+    function handleMobileGenerateFullDocPDF(taskId) {
+      var tasks = currentRoleTasks || [];
+      var t = null;
+      for (var i = 0; i < tasks.length; i++) {
+        if (tasks[i].id == taskId) { t = tasks[i]; break; }
+      }
+      if (!t) return alert('未找到对应任务详情');
+
+      var bodyHtml = '<div id="mobilePdfRenderBox" style="font-family:sans-serif; color:#000; background:#fff; padding:12px;">' +
+        '<div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:12px;">' +
+          '<h3 style="font-size:16px; margin:0 0 4px 0; color:#000;">' + t.school_name + ' 学籍档案业务窗口代办委托打包单</h3>' +
+          '<div style="font-size:11px; color:#555;">任务单号：' + (t.task_no || ('#' + t.id)) + ' | 生成时间：' + new Date().toLocaleString() + '</div>' +
+        '</div>' +
+        '<table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:12px;">' +
+          '<tr><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; width:90px; font-weight:bold;">办理事项</td><td style="border:1px solid #000; padding:5px 8px;" colspan="3"><strong>' + (t.service_title || '学籍业务') + '</strong></td></tr>' +
+          '<tr><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; font-weight:bold;">委托人</td><td style="border:1px solid #000; padding:5px 8px;">' + (t.student_name || '校友') + '</td><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; width:70px; font-weight:bold;">电话</td><td style="border:1px solid #000; padding:5px 8px;">' + (t.student_phone || '-') + '</td></tr>' +
+          '<tr><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; font-weight:bold;">受托代办员</td><td style="border:1px solid #000; padding:5px 8px; color:#1e40af; font-weight:bold;">' + (t.agent_name || (currentUser && currentUser.profile ? currentUser.profile.real_name : '认证校园代办员')) + ' (已实名)</td><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; font-weight:bold;">代办电话</td><td style="border:1px solid #000; padding:5px 8px;">' + (t.agent_phone || (currentUser && currentUser.profile ? currentUser.profile.phone : '-')) + '</td></tr>' +
+          '<tr><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; font-weight:bold;">高校校区</td><td style="border:1px solid #000; padding:5px 8px;">' + t.school_name + ' ' + (t.branch_school || '') + '</td><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; font-weight:bold;">专业/学号</td><td style="border:1px solid #000; padding:5px 8px;">' + (t.major || '-') + ' / ' + (t.student_no || '-') + '</td></tr>' +
+          '<tr><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; font-weight:bold;">收件地址</td><td style="border:1px solid #000; padding:5px 8px;" colspan="3">' + (t.student_address || '未填写') + '</td></tr>' +
+          '<tr><td style="border:1px solid #000; padding:5px 8px; background:#f5f5f5; font-weight:bold;">办理要求</td><td style="border:1px solid #000; padding:5px 8px;" colspan="3">' + (t.service_description || '按高校教务处通用规范办理') + '</td></tr>' +
+        '</table>' +
+        '<div style="font-weight:bold; font-size:13px; margin:12px 0 8px 0; border-left:3px solid #2563eb; padding-left:6px;">📎 附：学生已上传材料原件清单汇总</div>';
+
+      var mats = t.materials || [];
+      if (mats.length === 0) {
+        bodyHtml += '<div style="color:#666; font-size:12px; padding:20px; text-align:center; background:#fafafa; border:1px dashed #cbd5e1;">暂无材料照片</div>';
+      } else {
+        for (var k = 0; k < mats.length; k++) {
+          var m = mats[k];
+          bodyHtml += '<div style="margin-bottom:14px; text-align:center; background:#ffffff; border:1px solid #000; padding:8px; page-break-inside:avoid;">' +
+            '<div style="font-weight:bold; font-size:12px; margin-bottom:6px; text-align:left; color:#000; border-bottom:1px dashed #ccc; padding-bottom:4px;">📄 附件页 (' + (k + 1) + '/' + mats.length + ')：' + m.material_name + '</div>' +
+            (m.file_url ? ('<img src="' + m.file_url + '" style="max-width:100%; max-height:480px; object-fit:contain; display:block; margin:0 auto;">') : '<div style="color:#94a3b8; font-size:12px; padding:20px;">📸 [' + m.material_name + ' 原件照片文件：已核验]</div>') +
+          '</div>';
+        }
+      }
+      bodyHtml += '</div>';
+
+      document.getElementById('mobileDocPreviewTitle').innerText = '📄 ' + t.school_name + ' - 单据打包汇总';
+      document.getElementById('mobileDocPreviewBody').innerHTML = bodyHtml;
+      document.getElementById('mobileDocPreviewModal').style.display = 'flex';
+    }
+
+    async function downloadMobilePdfFile() {
+      var bodyElem = document.getElementById('mobilePdfRenderBox');
+      if (!bodyElem) return;
+      alert('⏳ 正在生成多页 A4 完整 PDF 文件，请稍候...');
+      try {
+        var jsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+        if (!jsPDFClass) throw new Error('PDF生成组件正在加载中，请稍候重试！');
+        var doc = new jsPDFClass('p', 'mm', 'a4');
+        var canvas = await html2canvas(bodyElem, { scale: 1.5, useCORS: true, logging: false });
+        var imgData = canvas.toDataURL('image/jpeg', 0.9);
+        var imgWidth = 210;
+        var pageHeight = 297;
+        var imgHeight = (canvas.height * imgWidth) / canvas.width;
+        var heightLeft = imgHeight;
+        var position = 0;
+
+        doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          doc.addPage();
+          doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        doc.save('校友帮业务代办打包委托单.pdf');
+      } catch (err) {
+        alert('PDF导出提示: ' + err.message + '，将自动调用系统打印/保存');
+        window.print();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 7. 学籍经历档案增删改查
+    // -------------------------------------------------------------
+    async function openEducationModal() {
+      setAppSwipeRefresh(false);
+      if (!currentUser) return;
+      document.getElementById('eduModal').style.display = 'flex';
+      resetEduForm();
+      loadEducationsList();
+    }
+    function closeEducationModal() {
+      setAppSwipeRefresh(true);
+      document.getElementById('eduModal').style.display = 'none';
+    }
+
+    // -------------------------------------------------------------
+    // 8. 委托人实名认证与收件地址维护
+    // -------------------------------------------------------------
+    async function openRealNameModal() {
+      setAppSwipeRefresh(false);
+      if (!currentUser) return;
+      document.getElementById('realNameModal').style.display = 'flex';
+      try {
+        var res = await safeFetchJson('/api/user/info');
+        if (res && res.user) {
+          if (document.getElementById('realNameInput')) document.getElementById('realNameInput').value = res.user.real_name || '';
+          if (document.getElementById('realPhoneInput')) document.getElementById('realPhoneInput').value = res.user.phone || '';
+          if (document.getElementById('realIdCardInput')) document.getElementById('realIdCardInput').value = res.user.id_card || '';
+          if (document.getElementById('realAddressInput')) document.getElementById('realAddressInput').value = res.user.address || '';
+        }
+      } catch (e) {}
+    }
+
+    var _mTempAdminQRBase64 = null;
+    var _mCurrentConfiguredQR = null;
+
+    function switchMobileGatewayPanel(val) {
+      if (document.getElementById('mPanelEasypay')) {
+        document.getElementById('mPanelEasypay').style.display = (val === 'easypay' || val === 'zpay') ? 'block' : 'none';
+        if (val === 'zpay') {
+          document.getElementById('mTitleEasypay').innerText = '💎 ZPay 个人免签接口配置 (https://z-pay.cn)';
+          if (!document.getElementById('mAdminEpApiBase').value || document.getElementById('mAdminEpApiBase').value === 'https://sub.cnkiedu.cn') {
+            document.getElementById('mAdminEpApiBase').value = 'https://z-pay.cn';
+          }
+        } else if (val === 'easypay') {
+          document.getElementById('mTitleEasypay').innerText = '⚡ 易支付 / Sub2API 网关参数配置';
+        }
+      }
+      if (document.getElementById('mPanelAlipay')) document.getElementById('mPanelAlipay').style.display = (val === 'alipay_direct' ? 'block' : 'none');
+      if (document.getElementById('mPanelWxpay')) document.getElementById('mPanelWxpay').style.display = (val === 'wxpay_direct' ? 'block' : 'none');
+    }
+
+    async function openAdminPayConfigModal() {
+      setAppSwipeRefresh(false);
+      document.getElementById('adminPayConfigModal').style.display = 'flex';
+      try {
+        var qrRes = await safeFetchJson('/api/platform/payment-qrcode');
+        if (qrRes) {
+          _mCurrentConfiguredQR = qrRes.qrcode || null;
+          if (document.getElementById('mAdminQRNotes')) document.getElementById('mAdminQRNotes').value = qrRes.notes || '';
+          renderMobileQRPreview();
+        }
+
+        var gwRes = await safeFetchJson('/api/admin/payment-gateway-config');
+        if (gwRes && gwRes.config) {
+          var cfg = gwRes.config;
+          if (document.getElementById('mAdminEnablePersonal')) document.getElementById('mAdminEnablePersonal').checked = cfg.enable_personal !== false;
+          if (document.getElementById('mAdminEnableOnline')) document.getElementById('mAdminEnableOnline').checked = cfg.enable_online === true;
+          if (document.getElementById('mAdminActiveGateway')) {
+            document.getElementById('mAdminActiveGateway').value = cfg.active_gateway || 'easypay';
+            switchMobileGatewayPanel(cfg.active_gateway || 'easypay');
+          }
+          if (cfg.easypay) {
+            document.getElementById('mAdminEpApiBase').value = cfg.easypay.api_base || 'https://sub.cnkiedu.cn';
+            document.getElementById('mAdminEpPid').value = cfg.easypay.pid || '';
+            document.getElementById('mAdminEpPkey').value = cfg.easypay.pkey || '';
+            document.getElementById('mAdminEpNotifyUrl').value = cfg.easypay.notify_url || '';
+            document.getElementById('mAdminEpReturnUrl').value = cfg.easypay.return_url || '';
+          }
+          if (cfg.alipay_direct) {
+            if (document.getElementById('mAdminAliAppId')) document.getElementById('mAdminAliAppId').value = cfg.alipay_direct.app_id || '';
+            if (document.getElementById('mAdminAliPrivateKey')) document.getElementById('mAdminAliPrivateKey').value = cfg.alipay_direct.private_key || '';
+            if (document.getElementById('mAdminAliPublicKey')) document.getElementById('mAdminAliPublicKey').value = cfg.alipay_direct.alipay_public_key || '';
+          }
+          if (cfg.wxpay_direct) {
+            if (document.getElementById('mAdminWxAppId')) document.getElementById('mAdminWxAppId').value = cfg.wxpay_direct.appid || '';
+            if (document.getElementById('mAdminWxMchId')) document.getElementById('mAdminWxMchId').value = cfg.wxpay_direct.mchid || '';
+            if (document.getElementById('mAdminWxApiV3Key')) document.getElementById('mAdminWxApiV3Key').value = cfg.wxpay_direct.apiv3_key || '';
+          }
+        }
+      } catch (e) {}
+    }
+
+    function renderMobileQRPreview() {
+      var p = document.getElementById('mAdminQRPreview');
+      if (!p) return;
+      var src = _mTempAdminQRBase64 || _mCurrentConfiguredQR;
+      if (src) {
+        p.innerHTML = '<img src="' + src + '" style="max-width:140px; max-height:140px; border-radius:6px; border:1px solid #cbd5e1;">';
+      } else {
+        p.innerHTML = '<div style="font-size:12px; color:#94a3b8;">暂未设置收款码</div>';
+      }
+    }
+
+    function closeAdminPayConfigModal() {
+      setAppSwipeRefresh(true);
+      document.getElementById('adminPayConfigModal').style.display = 'none';
+    }
+
+    async function handleMobileAdminQRSelect(elem) {
+      if (!elem.files || elem.files.length === 0) return;
+      try {
+        _mTempAdminQRBase64 = await (window.compressImageFile || compressImageFile)(elem.files[0], 1080, 0.85);
+        renderMobileQRPreview();
+      } catch (e) {
+        alert('图片处理异常: ' + e.message);
+      }
+    }
+
+    async function submitMobileAdminPayConfig() {
+      var enablePersonal = document.getElementById('mAdminEnablePersonal').checked;
+      var enableOnline = document.getElementById('mAdminEnableOnline').checked;
+      var activeGateway = document.getElementById('mAdminActiveGateway') ? document.getElementById('mAdminActiveGateway').value : 'easypay';
+
+      var epApiBase = document.getElementById('mAdminEpApiBase') ? document.getElementById('mAdminEpApiBase').value.trim() : '';
+      var epPid = document.getElementById('mAdminEpPid') ? document.getElementById('mAdminEpPid').value.trim() : '';
+      var epPkey = document.getElementById('mAdminEpPkey') ? document.getElementById('mAdminEpPkey').value.trim() : '';
+
+      var aliAppId = document.getElementById('mAdminAliAppId') ? document.getElementById('mAdminAliAppId').value.trim() : '';
+      var aliPrivateKey = document.getElementById('mAdminAliPrivateKey') ? document.getElementById('mAdminAliPrivateKey').value.trim() : '';
+      var aliPublicKey = document.getElementById('mAdminAliPublicKey') ? document.getElementById('mAdminAliPublicKey').value.trim() : '';
+
+      var wxAppId = document.getElementById('mAdminWxAppId') ? document.getElementById('mAdminWxAppId').value.trim() : '';
+      var wxMchId = document.getElementById('mAdminWxMchId') ? document.getElementById('mAdminWxMchId').value.trim() : '';
+      var wxApiV3Key = document.getElementById('mAdminWxApiV3Key') ? document.getElementById('mAdminWxApiV3Key').value.trim() : '';
+
+      var notes = document.getElementById('mAdminQRNotes').value.trim();
+      var qrData = _mTempAdminQRBase64 || _mCurrentConfiguredQR;
+
+      try {
+        if (qrData) {
+          await safeFetchJson('/api/admin/payment-qrcode', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+            },
+            body: JSON.stringify({ qrcode: qrData, notes: notes })
+          });
+        }
+
+        var gatewayPayload = {
+          enable_personal: enablePersonal,
+          enable_online: enableOnline,
+          active_gateway: activeGateway,
+          supported_channels: ['alipay', 'wxpay'],
+          easypay: {
+            api_base: document.getElementById('mAdminEpApiBase').value.trim() || 'https://sub.cnkiedu.cn',
+            pid: document.getElementById('mAdminEpPid').value.trim(),
+            pkey: document.getElementById('mAdminEpPkey').value.trim(),
+            notify_url: document.getElementById('mAdminEpNotifyUrl').value.trim(),
+            return_url: document.getElementById('mAdminEpReturnUrl').value.trim(),
+            supported_types: ['alipay', 'wxpay']
+          },
+          alipay_direct: {
+            app_id: aliAppId,
+            private_key: aliPrivateKey,
+            alipay_public_key: aliPublicKey
+          },
+          wxpay_direct: {
+            appid: wxAppId,
+            mchid: wxMchId,
+            apiv3_key: wxApiV3Key
+          }
+        };
+
+        var res = await safeFetchJson('/api/admin/payment-gateway-config', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify(gatewayPayload)
+        });
+
+        if (res && res.success) {
+          alert('🎉 多平台支付通道配置已全量更新并生效！');
+          closeAdminPayConfigModal();
+        } else {
+          alert('保存失败: ' + (res ? (res.error || res.message) : '未知错误'));
+        }
+      } catch (err) {
+        alert('网络请求异常: ' + err.message);
+      }
+    }
+
+    function closeRealNameModal() {
+      setAppSwipeRefresh(true);
+      document.getElementById('realNameModal').style.display = 'none';
+    }
+
+    async function submitSaveRealNameProfile() {
+      var real_name = document.getElementById('realNameInput').value.trim();
+      var phone = document.getElementById('realPhoneInput').value.trim();
+      var id_card = document.getElementById('realIdCardInput').value.trim();
+      var address = document.getElementById('realAddressInput').value.trim();
+
+      if (!real_name || !phone || !id_card || !address) {
+        alert('请完整填写真实姓名、手机号、身份证号与收件地址！');
+        return;
+      }
+
+      try {
+        var res = await safeFetchJson('/api/user/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({
+            real_name: real_name,
+            phone: phone,
+            id_card: id_card,
+            address: address
+          })
+        });
+
+        if (res && res.success) {
+          alert('🎉 实名与顺丰收件信息已成功保存！');
+          var statusEl = document.getElementById('profileRealNameStatusText');
+          if (statusEl) statusEl.innerHTML = '<span style="color:#16a34a; font-weight:700;">✅ 已实名 (' + real_name + ') &gt;</span>';
+          closeRealNameModal();
+        } else {
+          alert('保存失败: ' + (res ? (res.error || res.message) : '未知错误'));
+        }
+      } catch (err) {
+        alert('网络请求异常: ' + err.message);
+      }
+    }
+
+    async function loadEducationsList() {
+      var c = document.getElementById('eduListContainer');
+      try {
+        var res = await safeFetchJson('/api/educations');
+        var list = (res && res.educations) ? res.educations : (Array.isArray(res) ? res : []);
+        if (list.length === 0) {
+          c.innerHTML = '<div style="text-align:center; padding:15px; color:#94a3b8;">暂无学籍档案，请在下方添加</div>';
+          return;
+        }
+        var html = '';
+        list.forEach(function(e) {
+          html += '<div class="card" style="margin-bottom:8px; padding:10px; border:1px solid #cbd5e1;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+              '<strong>' + e.school_name + ' (' + (e.campus || '主校区') + ')</strong>' +
+              '<span class="badge" style="background:#e0e7ff; color:#3730a3;">' + (e.edu_level || '本科') + '</span>' +
+            '</div>' +
+            '<div style="font-size:12px; color:#475569; margin:4px 0;">专业: ' + (e.major || '-') + ' | 学号: ' + (e.student_no || '-') + '</div>' +
+            '<div style="display:flex; justify-content:flex-end; gap:6px; margin-top:6px;">' +
+              '<button class="btn btn-sm btn-outline" onclick=\'editEduItem(' + JSON.stringify(e) + ')\'>✏️ 编辑</button>' +
+              '<button class="btn btn-sm btn-outline" style="color:var(--danger);" onclick="deleteEduItem(' + e.id + ')">🗑️ 删除</button>' +
+            '</div>' +
+          '</div>';
+        });
+        c.innerHTML = html;
+      } catch (err) {
+        c.innerHTML = '<div style="color:red;">加载失败: ' + err.message + '</div>';
+      }
+    }
+
+    function editEduItem(e) {
+      document.getElementById('eduFormTitle').innerText = '✏️ 修改学籍信息 - ' + e.school_name;
+      document.getElementById('eduEditId').value = e.id;
+      document.getElementById('eduLevelSelect').value = e.edu_level || '本科';
+      document.getElementById('eduSchoolSelect').value = e.school_name;
+      handleEduSchoolChange(e.school_name);
+      document.getElementById('eduCampusSelect').value = e.campus || '主校区';
+      if (document.getElementById('eduBranchSchoolInput')) document.getElementById('eduBranchSchoolInput').value = e.branch_school || '';
+      document.getElementById('eduMajorInput').value = e.major || '';
+      document.getElementById('eduStudentNoInput').value = e.student_no || '';
+      document.getElementById('eduStartYear').value = e.enrollment_year || e.start_year || '';
+      document.getElementById('eduEndYear').value = e.graduation_year || e.end_year || '';
+      if (document.getElementById('eduDiplomaNoInput')) document.getElementById('eduDiplomaNoInput').value = e.diploma_no || '';
+      if (document.getElementById('eduDegreeNoInput')) document.getElementById('eduDegreeNoInput').value = e.degree_no || '';
+      if (document.getElementById('eduDegreeInput')) document.getElementById('eduDegreeInput').value = e.degree || '';
+      if (document.getElementById('eduRemarkInput')) document.getElementById('eduRemarkInput').value = e.remark || '';
+      document.getElementById('btnCancelEduEdit').style.display = 'inline-block';
+    }
+
+    function resetEduForm() {
+      document.getElementById('eduFormTitle').innerText = '➕ 添加新学籍档案';
+      document.getElementById('eduEditId').value = '';
+      if (document.getElementById('eduBranchSchoolInput')) document.getElementById('eduBranchSchoolInput').value = '';
+      document.getElementById('eduMajorInput').value = '';
+      document.getElementById('eduStudentNoInput').value = '';
+      document.getElementById('eduStartYear').value = '';
+      document.getElementById('eduEndYear').value = '';
+      if (document.getElementById('eduDiplomaNoInput')) document.getElementById('eduDiplomaNoInput').value = '';
+      if (document.getElementById('eduDegreeNoInput')) document.getElementById('eduDegreeNoInput').value = '';
+      if (document.getElementById('eduDegreeInput')) document.getElementById('eduDegreeInput').value = '';
+      if (document.getElementById('eduRemarkInput')) document.getElementById('eduRemarkInput').value = '';
+      document.getElementById('btnCancelEduEdit').style.display = 'none';
+    }
+
+    async function submitSaveEducation() {
+      var editId = document.getElementById('eduEditId').value;
+      var level = document.getElementById('eduLevelSelect').value;
+      var school = document.getElementById('eduSchoolSelect').value;
+      var campus = document.getElementById('eduCampusSelect').value;
+      var branch_school = document.getElementById('eduBranchSchoolInput') ? document.getElementById('eduBranchSchoolInput').value.trim() : '';
+      var major = document.getElementById('eduMajorInput').value.trim();
+      var sno = document.getElementById('eduStudentNoInput').value.trim();
+      var sYear = document.getElementById('eduStartYear').value;
+      var eYear = document.getElementById('eduEndYear').value;
+      var diploma_no = document.getElementById('eduDiplomaNoInput') ? document.getElementById('eduDiplomaNoInput').value.trim() : '';
+      var degree_no = document.getElementById('eduDegreeNoInput') ? document.getElementById('eduDegreeNoInput').value.trim() : '';
+      var degree = document.getElementById('eduDegreeInput') ? document.getElementById('eduDegreeInput').value.trim() : '';
+      var remark = document.getElementById('eduRemarkInput') ? document.getElementById('eduRemarkInput').value.trim() : '';
+
+      if (!school || !major || !sno) {
+        alert('【教育层次】、【学校全称】、【专业】、【学号】为必填项！');
+        return;
+      }
+
+      var payload = {
+        edu_level: level,
+        school_name: school,
+        campus: campus,
+        branch_school: branch_school,
+        major: major,
+        student_no: sno,
+        enrollment_year: sYear,
+        graduation_year: eYear,
+        diploma_no: diploma_no,
+        degree_no: degree_no,
+        degree: degree,
+        remark: remark
+      };
+
+      try {
+        var endpoint = editId ? '/api/educations/update' : '/api/educations';
+        if (editId) payload.id = editId;
+
+        var res = await safeFetchJson(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res && res.success) {
+          alert('🎉 学籍档案保存成功！');
+          resetEduForm();
+          loadEducationsList();
+        } else {
+          alert('保存失败: ' + (res.error || '未知错误'));
+        }
+      } catch (err) {
+        alert('网络异常: ' + err.message);
+      }
+    }
+
+    async function deleteEduItem(id) {
+      if (!confirm('确认删除该条学籍档案吗？')) return;
+      try {
+        var res = await safeFetchJson('/api/educations/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({ id: id })
+        });
+        if (res && res.success) {
+          alert('学籍已删除');
+          loadEducationsList();
+        } else {
+          alert(res.error || '删除失败');
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 8. 申请成为校园认证代办员
+    // -------------------------------------------------------------
+    function openAgentApplyModal() {
+      if (!currentUser) return;
+      document.getElementById('agentApplyModal').style.display = 'flex';
+    }
+    function closeAgentApplyModal() {
+      document.getElementById('agentApplyModal').style.display = 'none';
+    }
+
+    function handleAgentSingleUpload(event, type) {
+      var file = event.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        if (type === 'id_card') {
+          agentIdCardBase64 = e.target.result;
+          document.getElementById('agentIdCardText').innerHTML = '<span style="color:var(--success); font-weight:bold;">✅ 身份证已拍照</span>';
+        } else {
+          agentReportBase64 = e.target.result;
+          document.getElementById('agentReportText').innerHTML = '<span style="color:var(--success); font-weight:bold;">✅ 报告已拍照</span>';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function submitAgentApplication() {
+      var name = document.getElementById('agentRealName').value.trim();
+      var phone = document.getElementById('agentPhone').value.trim();
+      var school = document.getElementById('agentSchoolSelect').value;
+      var campus = document.getElementById('agentCampusSelect').value;
+      var alipay = document.getElementById('agentAlipay').value.trim();
+
+      if (!name || !phone || !school || !alipay) {
+        alert('请完整填写姓名、电话、高校及结算支付宝账号！');
+        return;
+      }
+
+      var payload = {
+        real_name: name,
+        phone: phone,
+        school_name: school,
+        campus: campus,
+        alipay_account: alipay,
+        id_card_img: agentIdCardBase64,
+        student_report_img: agentReportBase64
+      };
+
+      try {
+        var res = await safeFetchJson('/api/agent-apply', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify(payload)
+        });
+        if (res && res.success) {
+          alert('🎉 认证申请已提交！请等待平台管理员在线审批。');
+          closeAgentApplyModal();
+        } else {
+          alert('提交失败: ' + (res.error || '未知错误'));
+        }
+      } catch (err) {
+        alert('网络异常: ' + err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 9. 扫一扫摄像头与相册选图识别二维码
+    // -------------------------------------------------------------
+    function startCameraScan() {
+      var video = document.getElementById('scanVideo');
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('您的浏览器/设备不支持直接调用摄像头，请使用相册选图识别！');
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(function(stream) {
+          scanStream = stream;
+          video.srcObject = stream;
+          video.setAttribute('playsinline', true);
+          video.play();
+          requestAnimationFrame(tickScan);
+        })
+        .catch(function(err) {
+          alert('启动摄像头失败: ' + err.message + '\n请确保在 App 或浏览器中允许相机权限，或使用相册选图！');
+        });
+    }
+
+    var isScanningFrame = false;
+    async function tickScan() {
+      var video = document.getElementById('scanVideo');
+      if (video && video.readyState === video.HAVE_ENOUGH_DATA && !isScanningFrame) {
+        isScanningFrame = true;
+        try {
+          // 1. 优先使用 Android WebView 原生硬件加速 BarcodeDetector (毫秒级识别)
+          if ('BarcodeDetector' in window) {
+            try {
+              var detector = new BarcodeDetector({ formats: ['qr_code'] });
+              var barcodes = await detector.detect(video);
+              if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+                if (scanStream) scanStream.getTracks().forEach(function(t) { t.stop(); });
+                handleScanQrResult(barcodes[0].rawValue);
+                isScanningFrame = false;
+                return;
+              }
+            } catch(e) {}
+          }
+
+          // 2. 软件 jsQR 引擎全模式检测 (dontInvert + onlyInvert + attemptBoth)
+          var canvas = document.getElementById('scanCanvas');
+          if (canvas) {
+            var ctx = canvas.getContext('2d', { willReadFrequently: true });
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            if (typeof jsQR !== 'undefined') {
+              var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' }) ||
+                         jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+              if (code && code.data) {
+                if (scanStream) scanStream.getTracks().forEach(function(t) { t.stop(); });
+                handleScanQrResult(code.data);
+                isScanningFrame = false;
+                return;
+              }
+            }
+          }
+        } catch(err) {
+          console.warn('Frame scan err:', err);
+        }
+        isScanningFrame = false;
+      }
+      if (document.getElementById('tabViewScan') && document.getElementById('tabViewScan').style.display !== 'none') {
+        requestAnimationFrame(tickScan);
+      }
+    }
+
+    async function handleQrFileSelect(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+
+      // 优先尝试 Html5Qrcode 全局引擎
+      if (typeof Html5Qrcode !== 'undefined') {
+        try {
+          var html5QrCode = new Html5Qrcode("scanCanvas");
+          var decodedText = await html5QrCode.scanFile(file, true);
+          if (decodedText) {
+            handleScanQrResult(decodedText);
+            return;
+          }
+        } catch (e) {
+          console.warn('Html5Qrcode scanFile failed, falling back to jsQR multi-scale scanner', e);
+        }
+      }
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          var scales = [1.0, 0.75, 0.5, 1.25];
+          var foundCode = null;
+
+          for (var s = 0; s < scales.length; s++) {
+            var scale = scales[s];
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            if (typeof jsQR !== 'undefined') {
+              foundCode = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' }) ||
+                          jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'onlyInvert' }) ||
+                          jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
+              if (foundCode && foundCode.data) break;
+            }
+          }
+
+          if (foundCode && foundCode.data) {
+            handleScanQrResult(foundCode.data);
+          } else {
+            alert('未能从图片中识别出二维码，请确保截图包含清晰完整的【📱 扫码登录】二维码！');
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handleScanQrResult(qrText) {
+      if (!qrText) return;
+      try {
+        qrText = qrText.trim();
+        var isLoginQr = (qrText.indexOf('qr_key=') !== -1 || qrText.indexOf('action=scan_login') !== -1 || qrText.startsWith('qr_'));
+
+        if (isLoginQr) {
+          var qrKey = qrText;
+          if (qrText.indexOf('qr_key=') !== -1) {
+            qrKey = qrText.split('qr_key=')[1].split('&')[0];
+          } else if (qrText.indexOf('ticket=') !== -1) {
+            qrKey = qrText.split('ticket=')[1].split('&')[0];
+          } else if (qrText.indexOf('key=') !== -1) {
+            qrKey = qrText.split('key=')[1].split('&')[0];
+          }
+
+          if (!localStorage.getItem('xyb_token')) {
+            alert('📌 扫描到电脑端登录二维码！\\n请先在手机 App 上登录您的账号，然后再扫码授权电脑端！');
+            switchMainTab('tasks');
+            return;
+          }
+
+          // 1. 发送扫码中状态通知给电脑端
+          safeFetchJson('/api/auth/qr/scan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+            },
+            body: JSON.stringify({ qr_key: qrKey })
+          }).then(function() {
+            if (!confirm('📱 扫描成功！\\n确认授权电脑网页端以当前账号【' + (currentUser ? currentUser.email : '我') + '】直接登录吗？')) {
+              return;
+            }
+
+            // 2. 确认授权登录
+            safeFetchJson('/api/auth/qr/confirm', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+              },
+              body: JSON.stringify({ qr_key: qrKey, key: qrKey, ticket: qrKey })
+            }).then(function(res) {
+              if (res && res.success) {
+                alert('🎉 授权登录成功！电脑网页端已同步登录进入系统！');
+                switchMainTab('tasks');
+              } else {
+                alert('授权失败: ' + (res ? (res.error || res.message) : '二维码已过期或无效'));
+              }
+            });
+          });
+        } else if (qrText.indexOf('/sign/') !== -1) {
+          // ✍️ 扫描到电脑端的在线手写签名二维码（如 https://www.cnkiedu.cn/sign/xxx）
+          // 绝对不能执行 location.href 导致 App WebView 整体重载，而是在当前 App 内直接打开原生全屏签名容器或内嵌签名窗口
+          openStandaloneSignModal(qrText);
+        } else if (qrText.startsWith('http://') || qrText.startsWith('https://')) {
+          // 外部网址二维码
+          if (confirm('📷 扫描识别到网址：\\n' + qrText + '\\n\\n是否在系统浏览器中打开？')) {
+            window.location.href = qrText;
+          }
+        } else {
+          // 其他任意文本或条形码二维码
+          alert('📷 扫描识别成功！\\n识别内容：\\n' + qrText);
+        }
+      } catch (err) {
+        alert('扫码处理异常: ' + err.message);
+      }
+    }
+
+    var _mCurrentPersonalPayTaskId = null;
+    var _mCurrentPersonalPayBase64 = '';
+
+    async function openMobilePersonalPayModal(taskId, amount) {
+      setAppSwipeRefresh(false);
+      _mCurrentPersonalPayTaskId = taskId;
+      _mCurrentPersonalPayBase64 = '';
+      document.getElementById('mobilePersonalPayModal').style.display = 'flex';
+      document.getElementById('mPersonalPayAmount').innerText = '￥' + parseFloat(amount).toFixed(2);
+      document.getElementById('mPersonalPayProofPreview').style.display = 'none';
+      document.getElementById('mPersonalPayProofInput').value = '';
+
+      var qrContainer = document.getElementById('mPersonalPayQRContainer');
+      qrContainer.innerHTML = '<span style="color:#64748b; font-size:12px;">⏳ 正在调取平台收款码...</span>';
+
+      try {
+        var res = await safeFetchJson('/api/platform/payment-qrcode');
+        if (res && res.qrcode) {
+          qrContainer.innerHTML = '<img src="' + res.qrcode + '" style="max-height:180px; max-width:180px; border-radius:8px; border:1px solid #93c5fd; box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
+          if (res.notes) {
+            document.getElementById('mPersonalPayNotes').innerText = '💡 说明：' + res.notes;
+          }
+        } else {
+          qrContainer.innerHTML = '<div style="color:#dc2626; font-size:12px; padding:10px;">平台管理员暂未上传收款二维码</div>';
+        }
+      } catch (e) {
+        qrContainer.innerHTML = '<div style="color:#dc2626; font-size:12px;">加载收款码失败: ' + e.message + '</div>';
+      }
+    }
+
+    function closeMobilePersonalPayModal() {
+      setAppSwipeRefresh(true);
+      document.getElementById('mobilePersonalPayModal').style.display = 'none';
+    }
+
+    function previewMobileProof(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(evt) {
+        _mCurrentPersonalPayBase64 = evt.target.result;
+        document.getElementById('mPersonalPayProofImg').src = _mCurrentPersonalPayBase64;
+        document.getElementById('mPersonalPayProofPreview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function submitMobilePersonalPayProof() {
+      if (!_mCurrentPersonalPayTaskId) {
+        alert('缺少订单 ID');
+        return;
+      }
+      if (!_mCurrentPersonalPayBase64) {
+        alert('请先选择并上传付款成功截图凭证！');
+        return;
+      }
+
+      try {
+        var res = await safeFetchJson('/api/tasks/upload-payment-proof', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({
+            taskId: _mCurrentPersonalPayTaskId,
+            feeType: 'service',
+            proofImage: _mCurrentPersonalPayBase64
+          })
+        });
+
+        if (res && res.success) {
+          alert('🎉 代办费转账截图上传成功！代办员已收到核备通知。');
+          closeMobilePersonalPayModal();
+          loadCurrentRoleTasks();
+        } else {
+          alert('提交失败: ' + (res ? (res.error || '未知错误') : '服务异常'));
+        }
+      } catch (err) {
+        alert('提交异常: ' + err.message);
+      }
+    }
+    async function showRoleSwitchModal() {
+      setAppSwipeRefresh(false);
+      var modal = document.getElementById('roleSwitchModal');
+      if (modal) modal.style.display = 'flex';
+      var c = document.getElementById('roleSwitchListContainer');
+      if (!c) return;
+
+      c.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">⏳ 正在校验您的身份与角色权限...</div>';
+
+      function renderRoles(rList) {
+        var html = '';
+        rList.forEach(function(r) {
+          var isCurrent = (r.key === currentRole);
+          html += '<div class="card" style="margin-bottom:10px; cursor:pointer; border:2px solid ' + (isCurrent ? '#2563eb' : '#e2e8f0') + '; background:' + (isCurrent ? '#eff6ff' : '#fff') + '; padding:14px; border-radius:10px; box-shadow:0 2px 4px rgba(0,0,0,0.05);\" onclick="switchActiveRoleApi(\'' + r.key + '\')">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+              '<strong style="font-size:15px; color:' + (isCurrent ? '#1e40af' : '#1e293b') + ';">' + r.name + '</strong>' +
+              (isCurrent ? '<span class="badge" style="background:#2563eb; color:#fff; font-size:12px; padding:3px 10px; border-radius:12px;">当前激活</span>' : '<span class="arrow" style="font-size:13px; color:#2563eb; font-weight:700;">点击切换 &gt;</span>') +
+            '</div>' +
+            '<div style="font-size:12px; color:#64748b; margin-top:6px; line-height:1.4;">' + (r.desc || '') + '</div>' +
+          '</div>';
+        });
+        c.innerHTML = html;
+      }
+
+      try {
+        var res = await safeFetchJson('/api/user/my-roles');
+        if (res && res.available_roles && res.available_roles.length > 0) {
+          renderRoles(res.available_roles);
+        } else {
+          renderRoles([{ key: 'student', name: '🎓 学生 / 委托人', desc: '发布代办订单与维护教育经历' }]);
+        }
+      } catch (err) {
+        renderRoles([{ key: 'student', name: '🎓 学生 / 委托人', desc: '发布代办订单与维护教育经历' }]);
+      }
+    }
+    function closeRoleSwitchModal() {
+      setAppSwipeRefresh(true);
+      var modal = document.getElementById('roleSwitchModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function switchActiveRoleApi(targetRole) {
+      try {
+        var res = await safeFetchJson('/api/user/switch-active-role', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('xyb_token')
+          },
+          body: JSON.stringify({ target_role: targetRole, role: targetRole })
+        });
+        if (res && res.success) {
+          if (res.token) localStorage.setItem('xyb_token', res.token);
+          currentRole = targetRole;
+          localStorage.setItem('xyb_active_role', targetRole);
+          closeRoleSwitchModal();
+          updateUserUI();
+          loadCurrentRoleTasks();
+          startGlobalUnreadPolling();
+          alert('🎉 已成功切换至【' + (targetRole === 'agent' ? '官方代办员' : (targetRole === 'admin' ? '总管理员' : '学生校友')) + '】工作台！');
+        } else {
+          alert('切换失败: ' + (res.error || '未知错误'));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 11. 检查更新与通用工具
+    // -------------------------------------------------------------
+        function handleRequestBatteryOptimization() {
+      if (window.CampusHelperNative && typeof window.CampusHelperNative.requestBatteryOptimizationExemption === 'function') {
+        window.CampusHelperNative.requestBatteryOptimizationExemption();
+        alert('已调起系统电池优化设置，请将「校友帮」设为【无限制/允许后台活动】，确保锁屏与后台稳定接收消息！');
+      } else {
+        alert('提示：请在手机【系统设置 - 应用管理 - 校友帮 - 权限管理】中开启【允许通知】并允许【后台弹出界面与无限制省电】。');
+      }
+    }
+
+    function openAboutModal() {
+      alert('🎓 校友帮 移动端 App\n\n版本号: v' + CURRENT_VERSION + ' (Build ' + CURRENT_BUILD + ')\n官方开源仓: whsunshine8/xiaoyoubang-app\n定位: 全国高校学籍档案与成绩单校友跑腿互助平台');
+    }
+
+    async function checkAppUpdate(isManual) {
+      try {
+        var res = await fetch('https://api.github.com/repos/whsunshine8/xiaoyoubang-app/releases/latest');
+        var data = await res.json();
+        var latestTag = data.tag_name || 'v1.0.4';
+        var latestVer = latestTag.replace('v', '');
+
+        if (latestVer > CURRENT_VERSION) {
+          var downloadUrl = 'https://github.com/whsunshine8/xiaoyoubang-app/releases/download/' + latestTag + '/CampusHelper_' + latestTag + '.apk';
+          if (confirm('🚀 发现新版本 ' + latestTag + '！\n\n更新说明：' + (data.body || '性能优化与新特性升级') + '\n\n是否立即下载升级？')) {
+            window.location.href = downloadUrl;
+          }
+        } else {
+          if (isManual) alert('🎉 当前已是最新版本 v' + CURRENT_VERSION + ' (Build ' + CURRENT_BUILD + ')！');
+        }
+      } catch (err) {
+        if (isManual) alert('检查更新失败: ' + err.message);
+      }
+    }
+
+    var activeChatTaskId = null;
+    var imPollTimer = null;
+
+    function switchMainTab(tab, taskId) {
+      if (scanStream && tab !== 'scan') {
+        scanStream.getTracks().forEach(function(t) { t.stop(); });
+      }
+      if (imPollTimer && tab !== 'messages') {
+        clearInterval(imPollTimer);
+        imPollTimer = null;
+      }
+      var views = ['tasks', 'messages', 'scan', 'profile'];
+      views.forEach(function(v) {
+        document.getElementById('tabView' + v.charAt(0).toUpperCase() + v.slice(1)).style.display = (v === tab) ? 'block' : 'none';
+        document.getElementById('tabNav' + v.charAt(0).toUpperCase() + v.slice(1)).classList.toggle('active', v === tab);
+      });
+
+      if (tab === 'tasks') {
+        loadCurrentRoleTasks();
+        startGlobalUnreadPolling();
+      } else if (tab === 'scan') {
+        setTimeout(function() { startCameraScan(); }, 150);
+      } else if (tab === 'messages') {
+        if (taskId) {
+          switchMessageSubTab('order');
+          openImChatRoom(taskId);
+        } else {
+          if (currentMsgSubTab === 'order') {
+            loadImOrdersList();
+          } else {
+            loadSystemMessagesList();
+          }
+        }
+      }
+    }
+
+    var currentMsgSubTab = 'system';
+
+    function switchMessageSubTab(type) {
+      currentMsgSubTab = type;
+      var tabSys = document.getElementById('subTabSysMsg');
+      var tabOrder = document.getElementById('subTabOrderMsg');
+      var pSys = document.getElementById('panelSystemMessages');
+      var pOrder = document.getElementById('panelOrderMessages');
+
+      if (type === 'system') {
+        if (tabSys) {
+          tabSys.style.background = '#fff';
+          tabSys.style.color = '#2563eb';
+          tabSys.style.fontWeight = '700';
+          tabSys.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+        }
+        if (tabOrder) {
+          tabOrder.style.background = 'transparent';
+          tabOrder.style.color = '#64748b';
+          tabOrder.style.fontWeight = '600';
+          tabOrder.style.boxShadow = 'none';
+        }
+        if (pSys) pSys.style.display = 'block';
+        if (pOrder) pOrder.style.display = 'none';
+        loadSystemMessagesList();
+      } else {
+        if (tabSys) {
+          tabSys.style.background = 'transparent';
+          tabSys.style.color = '#64748b';
+          tabSys.style.fontWeight = '600';
+          tabSys.style.boxShadow = 'none';
+        }
+        if (tabOrder) {
+          tabOrder.style.background = '#fff';
+          tabOrder.style.color = '#2563eb';
+          tabOrder.style.fontWeight = '700';
+          tabOrder.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+        }
+        if (pSys) pSys.style.display = 'none';
+        if (pOrder) pOrder.style.display = 'block';
+        loadImOrdersList();
+      }
+    }
+
+    async function loadSystemMessagesList() {
+      var container = document.getElementById('systemBroadcastListContainer');
+      if (!container) return;
+      container.innerHTML = '<div style="text-align:center; padding:30px; color:#64748b;">⏳ 正在读取系统消息...</div>';
+
+      try {
+        // 1. 获取全员系统广播
+        var bRes = await safeFetchJson('/api/system/announcements');
+        var broadcasts = (bRes && bRes.success && bRes.broadcasts) ? bRes.broadcasts : [];
+
+        // 2. 获取个人专属任务派发与审核通知
+        var notifs = [];
+        if (localStorage.getItem('xyb_token')) {
+          var nRes = await safeFetchJson('/api/user/notifications');
+          if (nRes && nRes.success && nRes.notifications) {
+            notifs = nRes.notifications;
+          }
+        }
+
+        if (broadcasts.length === 0 && notifs.length === 0) {
+          container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;">暂无系统消息或通知公告</div>';
+          return;
+        }
+
+        var html = '';
+
+        // 渲染个人专属派发任务通知
+        if (notifs.length > 0) {
+          notifs.forEach(function(n) {
+            var isUnread = n.is_read === 0;
+            html += '<div class="card" style="margin-bottom:10px; padding:14px; border:1px solid ' + (isUnread ? '#3b82f6' : '#cbd5e1') + '; background:' + (isUnread ? '#eff6ff' : '#fff') + '; box-shadow:0 2px 4px rgba(0,0,0,0.03);">' +
+              '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
+                '<strong style="font-size:14px; color:#1e40af; display:flex; align-items:center; gap:4px;">' + n.title + ' ' + (isUnread ? '<span style="width:7px; height:7px; background:#ef4444; border-radius:50%; display:inline-block;"></span>' : '') + '</strong>' +
+                '<span style="font-size:11px; color:#94a3b8;">' + (n.created_at || '').substring(0, 16) + '</span>' +
+              '</div>' +
+              '<div style="font-size:13px; color:#334155; line-height:1.6; background:#ffffff; padding:10px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:6px;">' +
+                n.content +
+              '</div>' +
+              (n.target_task_id ? ('<div style="display:flex; justify-content:flex-end;"><button type="button" class="btn btn-sm btn-primary" style="font-size:11px; padding:3px 10px;" onclick="switchMainTab(\'tasks\')">👉 前往任务大厅查看</button></div>') : '') +
+            '</div>';
+          });
+        }
+
+        // 渲染全员广播
+        if (broadcasts.length > 0) {
+          broadcasts.forEach(function(b) {
+            html += '<div class="card" style="margin-bottom:10px; padding:14px; border:1px solid #cbd5e1; box-shadow:0 2px 4px rgba(0,0,0,0.03);">' +
+              '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
+                '<strong style="font-size:14px; color:#0f172a; display:flex; align-items:center; gap:4px;">📢 ' + b.title + '</strong>' +
+                '<span style="font-size:11px; color:#94a3b8;">' + (b.created_at || '').substring(0, 16) + '</span>' +
+              '</div>' +
+              '<div style="font-size:13px; color:#475569; line-height:1.6; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">' +
+                b.content +
+              '</div>' +
+            '</div>';
+          });
+        }
+
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger);">加载系统消息异常: ' + err.message + '</div>';
+      }
+    }
+
+    var _cachedUnreadMap = {};
+
+    async function loadImOrdersList() {
+      if (!currentUser) return;
+      document.getElementById('imOrdersListView').style.display = 'block';
+      document.getElementById('imChatRoomView').style.display = 'none';
+      if (imPollTimer) { clearInterval(imPollTimer); imPollTimer = null; }
+
+      var container = document.getElementById('imChatListContainer');
+      container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;">⏳ 正在读取进行中的订单与未读消息...</div>';
+
+      try {
+        // 1. 获取各订单未读计数
+        _cachedUnreadMap = {};
+        try {
+          var uRes = await safeFetchJson('/api/im/unread-counts');
+          if (uRes && uRes.success && uRes.unread) {
+            uRes.unread.forEach(function(item) {
+              _cachedUnreadMap[item.task_id] = item.unread_count || 0;
+            });
+          }
+        } catch (ue) {}
+
+        var endpoint = '/api/tasks/my';
+        if (currentRole === 'agent') endpoint = '/api/tasks?type=agent_market';
+        else if (currentRole === 'admin') endpoint = '/api/admin/tasks?status=all';
+
+        var res = await safeFetchJson(endpoint);
+        var tasks = (res && (res.tasks || res.data)) ? (res.tasks || res.data) : [];
+        // 筛选办理中/已接单/待沟通的订单
+        var activeTasks = tasks.filter(function(t) { return t.status === 'accepted' || t.status === 'in_progress' || t.agent_id; });
+
+        if (activeTasks.length === 0) {
+          // 如果没有严格 accepted，展示所有已发布的非取消订单供沟通
+          activeTasks = tasks.filter(function(t) { return t.status !== 'cancelled'; });
+        }
+
+        if (activeTasks.length === 0) {
+          container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;">暂无进行中的订单沟通<br><span style="font-size:11px;">当订单被承接后即可在此即时沟通</span></div>';
+          return;
+        }
+
+        var html = '';
+        activeTasks.forEach(function(t) {
+          var otherParty = '';
+          if (currentRole === 'agent') {
+            otherParty = '委托人: ' + formatStudentMaskedName(t.student_name, t.student_email || t.user_email);
+          } else {
+            otherParty = '代办员: ' + formatAgentMaskedName(t.agent_name);
+          }
+          var unreadCount = _cachedUnreadMap[t.id] || 0;
+          var hasUnread = unreadCount > 0;
+
+          var unreadTag = hasUnread ? 
+            '<span class="badge" style="background:#ef4444; color:#fff; font-size:11px; padding:2px 7px; border-radius:10px; font-weight:700; margin-left:6px; animation:pulse 2s infinite;">' + unreadCount + ' 条未读</span>' : '';
+
+          var chatHeaderTitle = (currentRole === 'agent') ? 
+            formatStudentMaskedName(t.student_name, t.student_email || t.user_email) : 
+            formatAgentMaskedName(t.agent_name);
+
+          html += '<div class="card" style="margin-bottom:10px; padding:13px; border:' + (hasUnread ? '2px solid #ef4444' : '1px solid #cbd5e1') + '; background:' + (hasUnread ? '#fff5f5' : '#fff') + '; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.04); border-radius:10px;" onclick="openImChatRoom(' + t.id + ', \'' + (t.service_title || '代办事项').replace(/'/g, "\\'") + '\', \'' + chatHeaderTitle.replace(/'/g, "\\'") + '\')">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
+              '<div style="display:flex; align-items:center;">' +
+                '<strong style="font-size:14px; color:' + (hasUnread ? '#991b1b' : '#0f172a') + ';">📋 ' + (t.service_title || '代办事项') + '</strong>' +
+                unreadTag +
+              '</div>' +
+              '<span class=\"badge badge-accepted\">进行中</span>' +
+            '</div>' +
+            '<div style="font-size:12px; color:#64748b; margin-bottom:8px; line-height:1.5;">' +
+              '<div>🏫 ' + (t.school_name || '高校') + ' · 单号: <strong>' + (t.task_no || ('#' + t.id)) + '</strong></div>' +
+              '<div>👤 ' + otherParty + '</div>' +
+            '</div>' +
+            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+              (hasUnread ? '<span style=\"font-size:11px; color:#dc2626; font-weight:700;\">🔔 有新消息待回复</span>' : '<span style=\"font-size:11px; color:#94a3b8;\">暂无新消息</span>') +
+              '<button type=\"button\" class=\"btn btn-sm ' + (hasUnread ? 'btn-danger' : 'btn-primary') + '\" style=\"font-size:11px; padding:3px 10px;\">💬 ' + (hasUnread ? '立即进入回复' : '进入沟通室') + ' &gt;</button>' +
+            '</div>' +
+          '</div>';
+        });
+
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger);">加载失败: ' + err.message + '</div>';
+      }
+    }
+
+    function openImChatRoom(taskId, title, peerName) {
+      activeChatTaskId = taskId;
+      document.getElementById('imOrdersListView').style.display = 'none';
+      document.getElementById('imChatRoomView').style.display = 'flex';
+      var headerText = '💬 ' + (title || ('订单 #' + taskId));
+      if (peerName) {
+        headerText = '💬 ' + peerName + ' · ' + (title || ('订单 #' + taskId));
+      }
+      document.getElementById('imChatRoomTitle').innerText = headerText;
+
+      renderImQuickPhrases();
+      refreshImMessages(true);
+
+      if (imPollTimer) clearInterval(imPollTimer);
+      imPollTimer = setInterval(function() { refreshImMessages(false); }, 3000);
+    }
+
+    function closeImChatRoom() {
+      activeChatTaskId = null;
+      if (imPollTimer) { clearInterval(imPollTimer); imPollTimer = null; }
+      loadImOrdersList();
+    }
+
+    function renderImQuickPhrases() {
+      var container = document.getElementById('imQuickPhrases');
+      if (!container) return;
+      var phrases = [];
+      if (currentRole === 'agent') {
+        phrases = [
+          '同学好，我正在前往教务处窗口办理！',
+          '材料已经审核通过，正在等待盖章',
+          '已在档案馆窗口提取好原件，发张现场照片给您',
+          '顺丰快递单号已生成，请在订单中查收',
+          '学校要求补充一份说明，请在沟通室发送给我'
+        ];
+      } else {
+        phrases = [
+          '代办员同学好，请问今天能去窗口办理吗？',
+          '请一定要让教务处在封口处加盖骑缝章！',
+          '相关证明材料与委托书我均已在系统签署确认',
+          '收件地址我有微调，请以系统最新地址为准',
+          '辛苦代办员同学了，办好请发下现场照片！'
+        ];
+      }
+      container.innerHTML = phrases.map(function(p) {
+        return '<button type="button" class="btn btn-sm btn-outline" style="padding:2px 8px; font-size:11px; white-space:nowrap; background:#f1f5f9; border:none; color:#334155;" onclick="insertQuickPhrase(\'' + p.replace(/'/g, "\\'") + '\')">' + p + '</button>';
+      }).join('');
+    }
+
+    function insertQuickPhrase(text) {
+      var input = document.getElementById('imTextInput');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    }
+
+    async function refreshImMessages(manualScroll) {
+      if (!activeChatTaskId) return;
+      try {
+        var res = await safeFetchJson('/api/im/messages/' + activeChatTaskId);
+        if (!res || !res.success) return;
+
+        var listEl = document.getElementById('imMessageList');
+        if (!listEl) return;
+        var msgs = res.messages || [];
+
+        if (msgs.length === 0) {
+          listEl.innerHTML = '<div style="text-align:center; padding:30px 10px; color:#94a3b8; font-size:12px;">' +
+            '<div style="font-size:32px; margin-bottom:8px;">💬</div>' +
+            '当前订单暂无沟通记录<br>代办员与学生可在此即时沟通办理细节与现场拍照' +
+          '</div>';
+          return;
+        }
+
+        var myUserId = currentUser ? currentUser.id : 0;
+        var html = '';
+
+        for (var i = 0; i < msgs.length; i++) {
+          var m = msgs[i];
+          var isMe = (m.sender_id === myUserId);
+          var timeStr = (m.created_at || '').substring(11, 16);
+
+          var bubbleContent = '';
+          if (m.message_type === 'image') {
+            bubbleContent = '<img src="' + m.content + '" style="max-width:180px; max-height:180px; border-radius:8px; cursor:pointer;" onclick="window.open(this.src)">';
+          } else {
+            bubbleContent = '<div style="word-break:break-word; font-size:13px; line-height:1.4;">' + m.content + '</div>';
+          }
+
+          if (isMe) {
+            var readStatusTag = (m.is_read == 1 || m.is_read === true) ? 
+              '<span style="color:#10b981; font-size:10px; font-weight:600; margin-right:4px;">已读</span>' : 
+              '<span style="color:#f59e0b; font-size:10px; font-weight:600; margin-right:4px;">未读</span>';
+
+            html += '<div style="display:flex; flex-direction:column; align-items:flex-end; margin-bottom:8px;">' +
+              '<div style="font-size:10px; color:#94a3b8; margin-bottom:2px; display:flex; align-items:center;">' + readStatusTag + '我 · ' + timeStr + '</div>' +
+              '<div style="background:#0284c7; color:#fff; padding:8px 12px; border-radius:12px 12px 2px 12px; max-width:82%; box-shadow:0 1px 2px rgba(0,0,0,0.05);">' +
+                bubbleContent +
+              '</div>' +
+            '</div>';
+          } else {
+            var roleTag = m.sender_role === 'agent' ? ' (校园代办员)' : (m.sender_role === 'admin' ? ' (平台客服)' : ' (学生)');
+            html += '<div style="display:flex; flex-direction:column; align-items:flex-start; margin-bottom:8px;">' +
+              '<div style="font-size:10px; color:#64748b; margin-bottom:2px;">' + (m.sender_name || '对方') + roleTag + ' · ' + timeStr + '</div>' +
+              '<div style="background:#f1f5f9; border:1px solid #e2e8f0; color:#1e293b; padding:8px 12px; border-radius:12px 12px 12px 2px; max-width:82%; box-shadow:0 1px 2px rgba(0,0,0,0.05);">' +
+                bubbleContent +
+              '</div>' +
+            '</div>';
+          }
+        }
+
+        var shouldScroll = manualScroll || (listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight < 120);
+        listEl.innerHTML = html;
+        if (shouldScroll) {
+          listEl.scrollTop = listEl.scrollHeight;
+        }
+      } catch (err) {}
+    }
+
+    async function handleSendImText() {
+      if (!activeChatTaskId) return;
+      var input = document.getElementById('imTextInput');
+      var content = input.value.trim();
+      if (!content) return;
+
+      input.value = '';
+      try {
+        var res = await safeFetchJson('/api/im/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            taskId: activeChatTaskId,
+            message_type: 'text',
+            content: content
+          })
+        });
+        if (res && res.success) {
+          refreshImMessages(true);
+        } else {
+          alert('发送失败: ' + (res.error || '未知错误'));
+        }
+      } catch (err) {
+        alert('发送异常: ' + err.message);
+      }
+    }
+
+    async function handleSendImImage(event) {
+      if (!activeChatTaskId) return;
+      var file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        var base64 = await (window.compressImageFile || compressImageFile)(file, 1280, 0.82);
+        var res = await safeFetchJson('/api/im/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            taskId: activeChatTaskId,
+            message_type: 'image',
+            content: base64
+          })
+        });
+        if (res && res.success) {
+          refreshImMessages(true);
+        } else {
+          alert('发送图片失败: ' + (res.error || '未知错误'));
+        }
+      } catch (err) {
+        alert('图片处理异常: ' + err.message);
+      }
+    }
+
+    async function safeFetchJson(url, options) {
+      options = options || {};
+      var token = localStorage.getItem('xyb_token');
+      if (token && !options.headers) {
+        options.headers = { 'Authorization': 'Bearer ' + token };
+      } else if (token && options.headers && !options.headers['Authorization']) {
+        options.headers['Authorization'] = 'Bearer ' + token;
+      }
+
+      var res = await fetch(url, options);
+      var text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error('服务端返回异常: ' + text.substring(0, 100));
+      }
+    }
+
+    function handleLogout() {
+      if (!confirm('确认退出当前账号吗？')) return;
+      localStorage.removeItem('xyb_token');
+      // 保留 xyb_active_role 偏好供下次登录默认选用
+      window.location.reload();
+    }
+  </script>
+</body>
+</html>

@@ -484,7 +484,7 @@
 
     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
       高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
-      Version v1.6.5 (Build 195)
+      Version v1.6.6 (Build 196)
     </div>
   </div>
 
@@ -662,7 +662,7 @@
             <span class="arrow">详情 &gt;</span>
           </div>
           <div class="menu-item" onclick="checkAppUpdate(true)">
-            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.6.5</span></span>
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.6.6</span></span>
             <span class="arrow">检测 &gt;</span>
           </div>
         </div>
@@ -1293,8 +1293,8 @@
 
   <!-- 核心交互脚本 -->
   <script>
-    var CURRENT_VERSION = '1.6.5';
-    var CURRENT_BUILD = 195;
+    var CURRENT_VERSION = '1.6.6';
+    var CURRENT_BUILD = 196;
     var currentUser = null;
     var currentRole = 'student';
     var availableSchools = [];
@@ -3017,12 +3017,20 @@ function openSignDocModal() {
       } else {
         for (var k = 0; k < mats.length; k++) {
           var m = mats[k];
+          var fileUrl = m.file_url;
+          // 🚀 智能兼容历史老订单：如果委托书/申请表的附件是纯签名或未合成公文，在生成 PDF 时动态为其合成标准公文大图！
+          if (m.material_name && (m.material_name.indexOf('委托') !== -1 || m.material_name.indexOf('申请') !== -1)) {
+            if (fileUrl && (fileUrl.length < 50000 || !m.fileName || m.fileName.indexOf('_已签署') === -1)) {
+              fileUrl = generateDocSvgDataUrl(m.material_name, t.school_name, t.branch_school, t.service_title, t.service_description, fileUrl);
+            }
+          }
+
           bodyHtml += '<div class="pdf-page-sheet" style="padding:24px; min-height:1000px; box-sizing:border-box; background:#fff; page-break-before:always; page-break-after:always; margin-top:10px;">' +
             '<div style="font-weight:bold; font-size:13px; margin-bottom:12px; text-align:left; color:#000; border-bottom:1px solid #000; padding-bottom:6px; display:flex; justify-content:space-between;">' +
               '<span>📄 附件材料 (' + (k + 1) + '/' + mats.length + ')：' + m.material_name + '</span>' +
               '<span style="font-size:11px; color:#64748b; font-weight:normal;">单号: ' + (t.task_no || ('#' + t.id)) + '</span>' +
             '</div>' +
-            (m.file_url ? ('<div style="text-align:center; margin-top:10px;"><img src="' + m.file_url + '" style="max-width:100%; max-height:860px; object-fit:contain; display:block; margin:0 auto; border:1px solid #e2e8f0;"></div>') : '<div style="color:#94a3b8; font-size:12px; padding:40px; text-align:center;">📸 [' + m.material_name + ' 原件照片文件：已核验]</div>') +
+            (fileUrl ? ('<div style="text-align:center; margin-top:10px;"><img src="' + fileUrl + '" style="max-width:100%; max-height:860px; object-fit:contain; display:block; margin:0 auto; border:1px solid #e2e8f0;"></div>') : '<div style="color:#94a3b8; font-size:12px; padding:40px; text-align:center;">📸 [' + m.material_name + ' 原件照片文件：已核验]</div>') +
           '</div>';
         }
       }

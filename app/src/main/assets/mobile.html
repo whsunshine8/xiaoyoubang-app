@@ -484,7 +484,7 @@
 
     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
       高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
-      Version v1.5.2 (Build 170)
+      Version v1.5.3 (Build 175)
     </div>
   </div>
 
@@ -662,7 +662,7 @@
             <span class="arrow">详情 &gt;</span>
           </div>
           <div class="menu-item" onclick="checkAppUpdate(true)">
-            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.5.2</span></span>
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.5.3</span></span>
             <span class="arrow">检测 &gt;</span>
           </div>
         </div>
@@ -1293,8 +1293,8 @@
 
   <!-- 核心交互脚本 -->
   <script>
-    var CURRENT_VERSION = '1.5.2';
-    var CURRENT_BUILD = 170;
+    var CURRENT_VERSION = '1.5.3';
+    var CURRENT_BUILD = 175;
     var currentUser = null;
     var currentRole = 'student';
     var availableSchools = [];
@@ -2300,7 +2300,6 @@
               '<button type="button" class="btn btn-sm btn-primary" style="padding:4px 8px; font-size:12px;" onclick="handleMobileSaveBothFees(' + t.id + ')">💾 保存费用</button>' +
             '</div>' +
             '<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">' +
-              '<button type="button" class="btn btn-sm" style="background:#2563eb; color:#fff; font-size:12px;" onclick="handleMobileGenerateFullDocPDF(' + t.id + ')">📄 查看/合成PDF</button>' +
               '<button type="button" class="btn btn-sm btn-outline" style="color:#b91c1c; border-color:#fca5a5; font-size:12px;" onclick="handleMobileRequestCancel(' + t.id + ')">🚫 协商取消</button>' +
             '</div>' +
           '</div>';
@@ -2743,12 +2742,12 @@ function openSignDocModal() {
     }
 
     function handleMobileGenerateFullDocPDF(taskId) {
-      var tasks = currentRoleTasks || [];
+      var tasks = taskListCache || [];
       var t = null;
       for (var i = 0; i < tasks.length; i++) {
         if (tasks[i].id == taskId) { t = tasks[i]; break; }
       }
-      if (!t) return alert('未找到对应任务详情');
+      if (!t) return alert('未找到对应任务详情 (ID: ' + taskId + ')');
 
       var bodyHtml = '<div id="mobilePdfRenderBox" style="font-family:sans-serif; color:#000; background:#fff; padding:12px;">' +
         '<div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:12px;">' +

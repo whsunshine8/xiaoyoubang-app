@@ -484,7 +484,7 @@
 
     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
       高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
-      Version v1.4.9 (Build 155)
+      Version v1.5.0 (Build 160)
     </div>
   </div>
 
@@ -662,7 +662,7 @@
             <span class="arrow">详情 &gt;</span>
           </div>
           <div class="menu-item" onclick="checkAppUpdate(true)">
-            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.4.9</span></span>
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.5.0</span></span>
             <span class="arrow">检测 &gt;</span>
           </div>
         </div>
@@ -1293,7 +1293,7 @@
 
   <!-- 核心交互脚本 -->
   <script>
-    var CURRENT_VERSION = '1.4.9';
+    var CURRENT_VERSION = '1.5.0';
     var CURRENT_BUILD = 155;
     var currentUser = null;
     var currentRole = 'student';
@@ -1816,6 +1816,9 @@
         }
       } catch (ne) {}
 
+      // 先立即切换显示主容器，防止后续请求异常导致停留在登录首屏
+      showAppMainScreen();
+
       // 读取上次持久化的工作角色
       var savedRole = localStorage.getItem('xyb_active_role');
       if (savedRole) currentRole = savedRole;
@@ -1845,12 +1848,19 @@
           loadCurrentRoleTasks();
           startGlobalUnreadPolling();
         } else {
-          localStorage.removeItem('xyb_token');
-      // 保留 xyb_active_role 偏好供下次登录默认选用
-          showGuestScreen();
+          // 如果接口返回无用户，但有 token，不强制踢出，允许保留主界面
+          if (currentUser) {
+            showAppMainScreen();
+            updateUserUI();
+          } else {
+            localStorage.removeItem('xyb_token');
+            showGuestScreen();
+          }
         }
       } catch (err) {
-        showGuestScreen();
+        console.error('checkAuthAndLoadUser error:', err);
+        // 网络波动时不清理 token，保持已登录界面
+        showAppMainScreen();
       }
     }
 
@@ -2008,7 +2018,7 @@
             localStorage.setItem('xyb_token', res.token);
           }
           alert('🎉 操作成功，欢迎进入校友帮！');
-          checkAuthAndLoadUser();
+          await checkAuthAndLoadUser();
         } else {
           alert('失败: ' + (res.error || '账号或密码错误'));
         }

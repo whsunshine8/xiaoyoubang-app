@@ -484,7 +484,7 @@
 
     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
       高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
-      Version v1.5.1 (Build 165)
+      Version v1.5.2 (Build 170)
     </div>
   </div>
 
@@ -662,7 +662,7 @@
             <span class="arrow">详情 &gt;</span>
           </div>
           <div class="menu-item" onclick="checkAppUpdate(true)">
-            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.5.1</span></span>
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.5.2</span></span>
             <span class="arrow">检测 &gt;</span>
           </div>
         </div>
@@ -1293,8 +1293,8 @@
 
   <!-- 核心交互脚本 -->
   <script>
-    var CURRENT_VERSION = '1.5.1';
-    var CURRENT_BUILD = 155;
+    var CURRENT_VERSION = '1.5.2';
+    var CURRENT_BUILD = 170;
     var currentUser = null;
     var currentRole = 'student';
     var availableSchools = [];
@@ -1307,6 +1307,7 @@
     var scanStream = null;
 
     var signCanvas, signCtx, isDrawing = false;
+    var savedSignatureBase64 = '';
 
     window.addEventListener('DOMContentLoaded', async function() {
       try {
@@ -1551,6 +1552,7 @@
     }
 
     function clearSignature() {
+      savedSignatureBase64 = '';
       if (!signCanvas || !signCtx) return;
       signCtx.clearRect(0, 0, signCanvas.width, signCanvas.height);
       var placeholder = document.getElementById('signCanvasPlaceholder');
@@ -1558,6 +1560,7 @@
     }
 
     function isSignCanvasEmpty() {
+      if (savedSignatureBase64) return false;
       if (!signCanvas || !signCtx) return true;
       var w = signCanvas.width;
       var h = signCanvas.height;
@@ -1574,6 +1577,7 @@
     }
 
     function getSignatureBase64() {
+      if (savedSignatureBase64) return savedSignatureBase64;
       if (!signCanvas || isSignCanvasEmpty()) return '';
       return signCanvas.toDataURL('image/png');
     }
@@ -2322,6 +2326,11 @@
           }
         }
 
+        var pdfBtn = '';
+        if (t.status !== 'pending' && t.status !== 'cancelled' && t.status !== 'pending_agent') {
+          pdfBtn = '<button type="button" class="btn btn-sm" style="background:#2563eb; color:#fff; font-size:12px;" onclick="handleMobileGenerateFullDocPDF(' + t.id + ')">📄 查看/合成PDF</button>';
+        }
+
         html += '<div class="order-card">' +
           '<div class="order-header">' +
             '<span class="order-title">📋 ' + (t.service_title || '学籍代办事项') + '</span>' +
@@ -2335,7 +2344,7 @@
             (t.service_description ? ('<div>📝 <strong>办理要求：</strong>' + t.service_description + '</div>') : '') +
             agentManageBar +
           '</div>' +
-          '<div class="order-actions">' + actionBtns + mobilePayBtns + '</div>' +
+          '<div class="order-actions">' + actionBtns + pdfBtn + mobilePayBtns + '</div>' +
         '</div>';
       });
 
@@ -2451,6 +2460,15 @@ function openSignDocModal() {
       document.getElementById("signDocModal").style.display = "flex";
       setTimeout(function() {
         initSignCanvas();
+        if (savedSignatureBase64 && signCanvas && signCtx) {
+          var img = new Image();
+          img.onload = function() {
+            signCtx.drawImage(img, 0, 0, signCanvas.width, signCanvas.height);
+            var placeholder = document.getElementById('signCanvasPlaceholder');
+            if (placeholder) placeholder.style.display = 'none';
+          };
+          img.src = savedSignatureBase64;
+        }
       }, 150);
     }
 
@@ -2461,13 +2479,19 @@ function openSignDocModal() {
     }
 
     function confirmSignDocModal() {
-      var data = getSignatureBase64();
+      var data = '';
+      if (!isSignCanvasEmpty()) {
+        data = signCanvas.toDataURL('image/png');
+      } else if (savedSignatureBase64) {
+        data = savedSignatureBase64;
+      }
       if (!data) {
         alert("请在底部手写板上书写您的真实姓名签名后再确认！");
         return;
       }
+      savedSignatureBase64 = data;
       closeSignDocModal();
-      alert("🎉 电子签名已成功合成至委托书与申请表！");
+      alert("🎉 电子签名已成功保存并合成至委托书与申请表！");
     }
 
     function updateTaskSignPreviewStatus() {
@@ -2583,6 +2607,17 @@ function openSignDocModal() {
         return;
       }
 
+      // 如果有签名，自动同步手签类单据为已签署已就绪
+      var mats = JSON.parse(JSON.stringify(currentTaskMaterials || []));
+      if (signature) {
+        mats.forEach(function(m) {
+          if (m.name.indexOf('委托书') !== -1 || m.name.indexOf('申请表') !== -1 || m.isDoc) {
+            m.status = 'uploaded';
+            m.file_url = signature;
+          }
+        });
+      }
+
       var payload = {
         task_id: editId || undefined,
         taskId: editId || undefined,
@@ -2593,7 +2628,7 @@ function openSignDocModal() {
         service_fee: fee,
         postage_fee: postFee,
         service_description: desc,
-        materials: currentTaskMaterials,
+        materials: mats,
         signature: signature
       };
 

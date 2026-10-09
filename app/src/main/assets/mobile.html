@@ -484,7 +484,7 @@
 
     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
       高校教务处 & 档案馆线下跑腿 · 在校生实名认证 · 顺丰直达<br>
-      Version v1.6.1 (Build 191)
+      Version v1.6.2 (Build 192)
     </div>
   </div>
 
@@ -662,7 +662,7 @@
             <span class="arrow">详情 &gt;</span>
           </div>
           <div class="menu-item" onclick="checkAppUpdate(true)">
-            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.6.1</span></span>
+            <span>🚀 检查更新 <span style="font-size:11px; color:#2563eb; font-weight:700;">v1.6.2</span></span>
             <span class="arrow">检测 &gt;</span>
           </div>
         </div>
@@ -1293,8 +1293,8 @@
 
   <!-- 核心交互脚本 -->
   <script>
-    var CURRENT_VERSION = '1.6.1';
-    var CURRENT_BUILD = 191;
+    var CURRENT_VERSION = '1.6.2';
+    var CURRENT_BUILD = 192;
     var currentUser = null;
     var currentRole = 'student';
     var availableSchools = [];
@@ -2703,13 +2703,15 @@ function openSignDocModal() {
         return;
       }
 
-      // 如果有签名，自动同步手签类单据为已签署已就绪
+      // 如果有签名，确保手签类单据使用已合成的公文图片（若未合成图片则兜底用签名），避免直接把孤立笔迹存为材料图片
       var mats = JSON.parse(JSON.stringify(currentTaskMaterials || []));
       if (signature) {
         mats.forEach(function(m) {
           if (m.name.indexOf('委托书') !== -1 || m.name.indexOf('申请表') !== -1 || m.isDoc) {
             m.status = 'uploaded';
-            m.file_url = signature;
+            if (!m.file_url) {
+              m.file_url = signature;
+            }
           }
         });
       }
